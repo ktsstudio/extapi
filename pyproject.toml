@@ -1,0 +1,116 @@
+[project]
+name = "extapi"
+version = "0.1.0"
+description = "External API library"
+authors = [
+    { name = "KTS", email = "hello@kts.tech" }
+]
+license = { text = "Proprietary" }
+
+# See https://pypi.python.org/pypi?%3Aaction=list_classifiers
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: AsyncIO",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = '>=3.10.0'
+readme = "README.md"
+dependencies = [
+    "multidict",
+    "yarl",
+]
+
+[project.optional-dependencies]
+aiohttp = [
+    "aiohttp",
+]
+httpx = [
+    "httpx",
+]
+
+tests = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+extapi = ["py.typed"]
+
+[[tool.mypy.overrides]]
+module = '*.*'
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["pytest-asyncio"]
+DEP004 = []
+
+
+[tool.ruff.format]
+# Аналогично black, двойные кавычки
+quote-style = "double"
+
+# Аналогично black, пробелы вместо табов
+indent-style = "space"
+
+# Аналогично black, уважаем trailing commas
+skip-magic-trailing-comma = false
+
+# Аналогично black, автоматически определяем подходящее окончание строки.
+line-ending = "auto"
+
+[tool.ruff.lint]
+# Список кодов или префиксов правил, которые следует считать исправляемыми. (https://docs.astral.sh/ruff/settings/#fixable)
+# По умолчанию все правила считаются исправляемыми.
+fixable = ["I", "RUF022", "RUF023", "F401"]
+preview = true
+
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.isort]
+# Позволяет использовать as в комбинации с группировкой  (https://docs.astral.sh/ruff/settings/#isort-combine-as-imports)
+#from package import (
+#    func1 as foo,
+#    func2 as boo,
+#)
+combine-as-imports = true
+
+# Воспринимать следующие пакеты в качестве stdlib       (https://docs.astral.sh/ruff/settings/#isort-extra-standard-library)
+extra-standard-library = ["typing_extensions"]
+
+# Не добавлять пустую строку перед данными секциям      (https://docs.astral.sh/ruff/settings/#isort-no-lines-before)
+no-lines-before = []
+
+[tool.ruff.lint.pep8-naming]
+# если навесить данные декораторы, то можно использовать cls    (https://docs.astral.sh/ruff/settings/#pep8-naming-classmethod-decorators)
+# в качестве первого аргумента.
+classmethod-decorators = ["cached_classproperty", "classproperty"]

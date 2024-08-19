@@ -1,0 +1,7 @@
+aiohttp
+multidict
+yarl
+pytest
+pytest-asyncio
+mypy
+ruff
