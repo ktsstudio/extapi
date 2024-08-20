@@ -10,7 +10,7 @@ from extapi.http.types import Response
 class TestRetry5xx:
     @pytest.mark.parametrize("status", [200, 201, 301, 400, 401, 403, 404])
     async def test_ok(self, status: int):
-        addon = Retry5xxAddon()
+        addon = Retry5xxAddon[Any]()
 
         response = Response(url="", status=status, backend_response=None)
         need_retry, timeout = await addon.need_retry(response)
@@ -22,7 +22,7 @@ class TestRetry5xx:
         "status", [500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510]
     )
     async def test_5xx(self, status: int):
-        addon = Retry5xxAddon()
+        addon = Retry5xxAddon[Any]()
 
         response = Response(url="", status=status, backend_response=None)
 
@@ -34,7 +34,7 @@ class TestRetry5xx:
 
 class TestRetry429:
     async def test_ok(self, response_simple: Response[Any]):
-        addon = Retry429Addon()
+        addon = Retry429Addon[Any]()
 
         need_retry, timeout = await addon.need_retry(response_simple)
 
@@ -42,7 +42,7 @@ class TestRetry429:
         assert timeout is None
 
     async def test_429_no_header(self):
-        addon = Retry429Addon()
+        addon = Retry429Addon[Any]()
 
         response = Response(url="", status=429, backend_response=None)
 
@@ -52,7 +52,7 @@ class TestRetry429:
         assert timeout is None
 
     async def test_429_with_header(self):
-        addon = Retry429Addon()
+        addon = Retry429Addon[Any]()
 
         response = Response(
             url="",
@@ -67,7 +67,7 @@ class TestRetry429:
         assert timeout == 42.0
 
     async def test_429_with_header_invalid(self):
-        addon = Retry429Addon()
+        addon = Retry429Addon[Any]()
 
         response = Response(
             url="",

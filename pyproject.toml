@@ -31,13 +31,21 @@ dependencies = [
 aiohttp = [
     "aiohttp",
 ]
+
 httpx = [
     "httpx",
+]
+
+opentelemetry = [
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-semantic-conventions",
 ]
 
 tests = [
     "pytest",
     "pytest-asyncio",
+    "coverage",
 ]
 
 [build-system]
@@ -59,7 +67,7 @@ check_untyped_defs = true
 asyncio_mode = "auto"
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["pytest-asyncio"]
+DEP002 = ["pytest-asyncio", "coverage"]
 DEP004 = []
 
 

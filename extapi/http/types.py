@@ -3,8 +3,10 @@ from typing import (
     Any,
     Generic,
     Literal,
+    Protocol,
     Self,
-    TypeVar, runtime_checkable, Protocol,
+    TypeVar,
+    runtime_checkable,
 )
 
 from multidict import CIMultiDict
@@ -71,6 +73,4 @@ class HttpExecuteError(ExecuteError):
         self.response = response
 
     def __str__(self):
-        return (
-            f"HTTPExecuteError(url={self.response.url}, status={self.response.status})"
-        )
+        return f"HTTPExecuteError(url={self.response.url}, status={self.response.status})"  # pragma: no cover

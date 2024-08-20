@@ -4,8 +4,9 @@ from collections.abc import Iterable
 from typing import Generic, TypeVar
 
 from extapi.http.abc import AbstractExecutor, Addon, Retryable
-from extapi.http.base import WrappedExecutor
 from extapi.http.types import ExecuteError, HttpExecuteError, RequestData, Response
+
+from .wrapped import WrappedExecutor
 
 T = TypeVar("T")
 
@@ -43,9 +44,9 @@ class RetryableExecutor(WrappedExecutor[T], Generic[T]):
             addon for addon in addons if isinstance(addon, Retryable)
         ]
 
-    async def _enrich(self, request: RequestData):
+    async def _before_request(self, request: RequestData):
         for addon in self._addons:
-            await addon.enrich(request)
+            await addon.before_request(request)
 
     async def _process_response(
         self, request: RequestData, response: Response[T]
@@ -75,7 +76,7 @@ class RetryableExecutor(WrappedExecutor[T], Generic[T]):
                 original_headers.copy() if original_headers is not None else None
             )
 
-            await self._enrich(request)
+            await self._before_request(request)
 
             retry_sleep_timeout = self._retry_sleep_timeout
             need_retry = False

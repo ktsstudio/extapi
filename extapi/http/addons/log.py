@@ -12,7 +12,7 @@ class LoggingAddon(Addon[T], Generic[T]):
     def __init__(self):
         self._logger = logging.getLogger("extapi.http.addons.log")
 
-    async def enrich(self, request: RequestData) -> None:
+    async def before_request(self, request: RequestData) -> None:
         self._logger.debug("executing request %s %s", request.method, str(request.url))
 
     async def process_response(
@@ -61,7 +61,7 @@ class VerboseLoggingExecutor(LoggingAddon[T], Generic[T]):
         super().__init__()
         self._truncate_response_data = truncate_response_data
 
-    async def enrich(self, request: RequestData) -> None:
+    async def before_request(self, request: RequestData) -> None:
         json = request.json
         if json is not None:
             if isinstance(json, bytes):

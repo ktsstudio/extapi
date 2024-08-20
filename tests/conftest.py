@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+from multidict import CIMultiDict
 
 from extapi.http.types import RequestData, Response
 
@@ -10,6 +11,19 @@ def request_simple() -> RequestData:
     return RequestData(
         method="GET",
         url="https://example.com",
+    )
+
+
+@pytest.fixture
+def request_filled() -> RequestData:
+    return RequestData(
+        method="GET",
+        url="https://example.com/some/path",
+        headers=CIMultiDict({"X-Test-Header-1": "one", "X-Test-Header-2": "two"}),
+        params={"param1": "one", "param2": "two"},
+        json={"json1": "one", "json2": "two"},
+        timeout=10.0,
+        kwargs={"extra1": "test"},
     )
 
 

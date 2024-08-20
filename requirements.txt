@@ -5,3 +5,6 @@ pytest
 pytest-asyncio
 mypy
 ruff
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-semantic-conventions

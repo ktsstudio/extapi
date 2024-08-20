@@ -1,8 +1,9 @@
-from typing import Generic
+from typing import Generic, TypeVar
 
 from extapi.http.abc import Retryable
-from extapi.http.executors.retry import T
 from extapi.http.types import Response
+
+T = TypeVar("T")
 
 
 class Retry5xxAddon(Retryable[T], Generic[T]):

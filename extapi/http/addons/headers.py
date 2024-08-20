@@ -22,6 +22,6 @@ class AddHeadersAddon(Addon[T]):
     ):
         self._adder = adder
 
-    async def enrich(self, request: RequestData) -> None:
+    async def before_request(self, request: RequestData) -> None:
         request.headers = request.headers or CIMultiDict()
         await execute_sync_async(self._adder, request.headers)

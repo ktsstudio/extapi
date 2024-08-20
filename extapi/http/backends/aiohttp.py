@@ -3,7 +3,7 @@ from typing import Any
 import aiohttp
 
 from extapi.http.abc import AbstractExecutor
-from extapi.http.types import RequestData, Response, Closable
+from extapi.http.types import Closable, RequestData, Response
 
 
 class AiohttpResponseWrap(Closable):

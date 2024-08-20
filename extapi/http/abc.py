@@ -30,7 +30,7 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
         self,
         request: RequestData,
     ) -> Response[T]:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     async def get(
         self,
@@ -160,7 +160,7 @@ class Retryable(Protocol[T]):
 
 @runtime_checkable
 class Addon(Protocol[T]):
-    async def enrich(self, request: RequestData) -> None: ...
+    async def before_request(self, request: RequestData) -> None: ...
 
     async def process_response(
         self, request: RequestData, response: Response[T]

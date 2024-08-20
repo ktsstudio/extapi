@@ -1,5 +1,5 @@
 import abc
-from typing import Self
+from typing import Protocol, Self
 
 
 class AbstractSemaphore(metaclass=abc.ABCMeta):
@@ -31,20 +31,5 @@ class _DummySemaphore(AbstractSemaphore):
 DummySemaphore = _DummySemaphore()
 
 
-class ConcurrencyLimiter(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def get_semaphore(self) -> AbstractSemaphore:
-        raise NotImplementedError
-
-    async def start(self) -> None:
-        return None
-
-    async def close(self) -> None:
-        return None
-
-    async def __aenter__(self) -> Self:
-        await self.start()
-        return self
-
-    async def __aexit__(self, *args, **kwargs) -> None:
-        await self.close()
+class ConcurrencyLimiter(Protocol):
+    def get_semaphore(self) -> AbstractSemaphore: ...

@@ -14,8 +14,8 @@ class StatusValidationAddon(Addon[T], Generic[T]):
     ):
         self._expected_statuses = set(expected_statuses)
 
-    async def enrich(self, request: RequestData) -> None:
-        return None
+    async def before_request(self, request: RequestData) -> None:
+        return None  # pragma: no cover
 
     async def process_response(
         self, request: RequestData, response: Response[T]

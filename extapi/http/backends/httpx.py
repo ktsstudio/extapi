@@ -7,7 +7,7 @@ from multidict import CIMultiDict
 from yarl import URL
 
 from extapi.http.abc import AbstractExecutor
-from extapi.http.types import RequestData, Response, Closable
+from extapi.http.types import Closable, RequestData, Response
 
 
 class HttpxResponseWrap(Closable):

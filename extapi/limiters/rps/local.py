@@ -25,7 +25,7 @@ class LocalRateLimiter(RateLimiter):
         self._logger = logging.getLogger("extapi.rate_limiter.local")
         self._deque: deque[float] = deque(maxlen=rate_limit)
 
-    async def limit_rps(self):
+    async def rate_limit(self):
         if self._rate_limit <= 0:
             return
 

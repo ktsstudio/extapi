@@ -1,10 +1,11 @@
 from typing import TypeVar
 
 from extapi.http.abc import AbstractExecutor
-from extapi.http.base import WrappedExecutor
 from extapi.http.types import RequestData, Response
 from extapi.limiters.concurrency.abc import ConcurrencyLimiter
 from extapi.limiters.rps.abc import RateLimiter
+
+from .wrapped import WrappedExecutor
 
 T = TypeVar("T")
 
@@ -39,5 +40,5 @@ class RateLimitedExecutor(WrappedExecutor[T]):
         self._rate_limiter = rate_limiter
 
     async def execute(self, request: RequestData) -> Response[T]:
-        await self._rate_limiter.limit_rps()
+        await self._rate_limiter.rate_limit()
         return await super().execute(request)
