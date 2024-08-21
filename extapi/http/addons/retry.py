@@ -7,9 +7,14 @@ T = TypeVar("T")
 
 
 class Retry5xxAddon(Retryable[T], Generic[T]):
+    __slots__ = ("_retry_timeout",)
+
+    def __init__(self, *, retry_timeout: float | None = None):
+        self._retry_timeout = retry_timeout
+
     async def need_retry(self, response: Response[T]) -> tuple[bool, float | None]:
         if response.status >= 500:
-            return True, None
+            return True, self._retry_timeout
 
         return False, None
 

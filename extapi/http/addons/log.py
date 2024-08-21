@@ -37,7 +37,7 @@ class LoggingAddon(Addon[T], Generic[T]):
                 "timeout error for request %s %s failed with error %s(%s)",
                 request.method,
                 str(request.url),
-                type(error),
+                type(error).__name__,
                 str(error),
             )
         elif isinstance(error, HttpExecuteError):
@@ -47,7 +47,7 @@ class LoggingAddon(Addon[T], Generic[T]):
                 "request %s %s failed with error %s(%s)",
                 request.method,
                 str(request.url),
-                type(error),
+                type(error).__name__,
                 error,
             )
 

@@ -122,7 +122,7 @@ class RetryableExecutor(WrappedExecutor[T], Generic[T]):
                 except Exception as e:
                     self._logger.error(
                         "error post-processing request execution error %s(%s): %s",
-                        type(last_exc),
+                        type(last_exc).__name__,
                         last_exc,
                         e,
                     )
@@ -135,7 +135,7 @@ class RetryableExecutor(WrappedExecutor[T], Generic[T]):
 
         if last_exc is not None:
             raise ExecuteError(
-                f"request failed after {self._max_retries} retries: {str(last_exc)}"
+                f"request failed after {self._max_retries} retries: {type(last_exc).__name__}({str(last_exc)})"
             ) from last_exc
-        else:
+        else:  # pragma: no cover
             raise ExecuteError(f"request failed after {self._max_retries} retries")

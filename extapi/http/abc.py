@@ -160,7 +160,8 @@ class Retryable(Protocol[T]):
 
 @runtime_checkable
 class Addon(Protocol[T]):
-    async def before_request(self, request: RequestData) -> None: ...
+    async def before_request(self, request: RequestData) -> None:
+        return None
 
     async def process_response(
         self, request: RequestData, response: Response[T]
