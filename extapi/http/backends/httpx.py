@@ -2,7 +2,6 @@ import abc
 
 import httpx
 from multidict import CIMultiDict
-from yarl import URL
 
 from extapi.http.abc import AbstractExecutor
 from extapi.http.types import (
@@ -28,6 +27,16 @@ class HttpxResponseWrap(BackendResponseProtocol[httpx.Response]):
         return await self._original.aread()
 
 
+_httpx_extra_kwargs = [
+    "content",
+    "files",
+    "cookies",
+    "auth",
+    "follow_redirects",
+    "extensions",
+]
+
+
 class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
     __slots__ = (
         "_client",
@@ -46,25 +55,34 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
         verify = kwargs.pop("verify", None)
         if verify is None:
             verify = check_ssl
-        self._client = httpx.AsyncClient(
+        self._client = self._make_client(
             verify=verify, follow_redirects=follow_redirects, **kwargs
         )
         self._default_timeout = default_timeout
+
+    def _make_client(self, *args, **kwargs) -> httpx.AsyncClient:
+        return httpx.AsyncClient(*args, **kwargs)
 
     async def close(self):
         await self._client.aclose()
 
     async def execute(self, request: RequestData) -> Response[httpx.Response]:
         timeout = request.timeout or self._default_timeout
-        url = request.url
-
-        if isinstance(url, URL):
-            url = str(url)
+        url = str(request.url)
 
         if request.headers is None:
             httpx_headers = []
         else:
             httpx_headers = [(k, str(v)) for k, v in request.headers.items()]
+
+        # httpx-specific kwargs
+        # we need to pull them individually because
+        # we may have our own custom kwargs
+        httpx_kwargs = {
+            key: request.kwargs[key]
+            for key in _httpx_extra_kwargs
+            if key in request.kwargs
+        }
 
         response = await self._client.stream(
             method=request.method,
@@ -74,11 +92,11 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
             data=request.data,
             headers=httpx_headers,
             timeout=timeout,
-            **request.kwargs,
+            **httpx_kwargs,
         ).__aenter__()
 
         return Response[httpx.Response](
-            url=url,
+            url=request.url,
             status=response.status_code,
             headers=CIMultiDict(response.headers),
             backend_response=HttpxResponseWrap(response),

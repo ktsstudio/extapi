@@ -1,6 +1,3 @@
-from multidict import CIMultiDict
-from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
-
 from extapi._meta import has_open_telemetry
 
 if not has_open_telemetry:
@@ -8,12 +5,12 @@ if not has_open_telemetry:
         "opentelemetry is not installed - run `pip install opentelemetry-api opentelemetry-sdk`"
     )
 
-
 from typing import Generic, TypeVar
 
+from multidict import CIMultiDict
 from opentelemetry import trace
 from opentelemetry.semconv.trace import SpanAttributes
-from yarl import URL
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from extapi.http.abc import AbstractExecutor
 from extapi.http.types import RequestData, Response
@@ -59,9 +56,6 @@ class OpenTelemetryExecutor(WrappedExecutor[T], Generic[T]):
                 self._trace_context_propagator.inject(request.headers)
 
             span.set_attribute(SpanAttributes.HTTP_REQUEST_METHOD, request.method)
-
-            if not isinstance(request.url, URL):
-                request.url = URL(request.url)
 
             if request.url.host is not None:
                 span.set_attribute(SpanAttributes.SERVER_ADDRESS, request.url.host)

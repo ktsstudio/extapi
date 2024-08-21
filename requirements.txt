@@ -8,3 +8,4 @@ ruff
 opentelemetry-api
 opentelemetry-sdk
 opentelemetry-semantic-conventions
+prometheus_client

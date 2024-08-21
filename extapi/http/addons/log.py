@@ -16,12 +16,10 @@ class LoggingAddon(Addon[T], Generic[T]):
         self._log_params = log_params
 
     def _get_url(self, request: RequestData) -> URL:
-        url_ = URL(request.url) if not isinstance(request.url, URL) else request.url
-
         if self._log_params and request.params:
-            return url_.with_query(request.params)
+            return request.url.with_query(request.params)
 
-        return url_
+        return request.url
 
     async def before_request(self, request: RequestData) -> None:
         url = self._get_url(request)

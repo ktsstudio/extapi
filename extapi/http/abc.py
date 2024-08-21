@@ -2,6 +2,7 @@ import abc
 from typing import Any, Generic, Protocol, Self, TypeVar, runtime_checkable
 
 from multidict import CIMultiDict
+from yarl import URL
 
 from .types import RequestData, Response, StrOrURL
 
@@ -48,7 +49,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         return await self.execute(
             RequestData(
                 method="GET",
-                url=url,
+                url=URL(url) if isinstance(url, str) else url,
                 params=params,
                 json=json,
                 data=data,
@@ -72,7 +73,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         return await self.execute(
             RequestData(
                 method="POST",
-                url=url,
+                url=URL(url) if isinstance(url, str) else url,
                 params=params,
                 json=json,
                 data=data,
@@ -96,7 +97,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         return await self.execute(
             RequestData(
                 method="DELETE",
-                url=url,
+                url=URL(url) if isinstance(url, str) else url,
                 params=params,
                 json=json,
                 data=data,
@@ -120,7 +121,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         return await self.execute(
             RequestData(
                 method="PUT",
-                url=url,
+                url=URL(url) if isinstance(url, str) else url,
                 params=params,
                 json=json,
                 data=data,
@@ -144,7 +145,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         return await self.execute(
             RequestData(
                 method="PATCH",
-                url=url,
+                url=URL(url) if isinstance(url, str) else url,
                 params=params,
                 json=json,
                 data=data,

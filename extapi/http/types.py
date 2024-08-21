@@ -23,7 +23,7 @@ DEFAULT_JSON_DECODER = json.loads
 @dataclass(slots=True, kw_only=True)
 class RequestData:
     method: HttpMethod
-    url: StrOrURL
+    url: URL
     params: dict[str, Any] | None = None
     json: Any = None
     data: Any = None
@@ -59,7 +59,7 @@ class BackendResponseProtocol(Protocol[T]):
 
 @dataclass(kw_only=True)
 class Response(Generic[T]):
-    url: StrOrURL
+    url: URL
     status: int
     headers: CIMultiDict = field(default_factory=lambda: CIMultiDict())
     backend_response: BackendResponseProtocol[T]

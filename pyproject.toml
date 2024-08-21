@@ -42,6 +42,10 @@ opentelemetry = [
     "opentelemetry-semantic-conventions",
 ]
 
+prometheus = [
+    "prometheus_client",
+]
+
 tests = [
     "pytest",
     "pytest-asyncio",

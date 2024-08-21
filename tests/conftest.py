@@ -2,6 +2,7 @@ from typing import Any
 
 import pytest
 from multidict import CIMultiDict
+from yarl import URL
 
 from extapi.http.types import RequestData, Response
 from tests.exthttp._helpers import DummyBackendResponse
@@ -11,7 +12,7 @@ from tests.exthttp._helpers import DummyBackendResponse
 def request_simple() -> RequestData:
     return RequestData(
         method="GET",
-        url="https://example.com",
+        url=URL("https://example.com"),
     )
 
 
@@ -19,7 +20,7 @@ def request_simple() -> RequestData:
 def request_filled() -> RequestData:
     return RequestData(
         method="GET",
-        url="https://example.com/some/path",
+        url=URL("https://example.com/some/path"),
         headers=CIMultiDict({"X-Test-Header-1": "one", "X-Test-Header-2": "two"}),
         params={"param1": "one", "param2": "two"},
         json={"json1": "one", "json2": "two"},

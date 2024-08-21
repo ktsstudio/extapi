@@ -1,6 +1,7 @@
 from typing import Any
 
 from multidict import CIMultiDict
+from yarl import URL
 
 from extapi.http.types import BackendResponseProtocol, Response
 from tests.exthttp._helpers import DummyBackendResponse
@@ -9,7 +10,7 @@ from tests.exthttp._helpers import DummyBackendResponse
 class TestResponse:
     async def test_has_data(self):
         response = Response(
-            url="example.com",
+            url=URL("example.com"),
             status=200,
             backend_response=DummyBackendResponse(b"some-data"),
         )
@@ -20,7 +21,7 @@ class TestResponse:
 
     async def test_json(self):
         response = Response(
-            url="example.com",
+            url=URL("example.com"),
             status=200,
             backend_response=DummyBackendResponse(b'{"a": 1, "b": [10, 20]}'),
         )
@@ -39,7 +40,7 @@ class TestResponse:
 
     async def test_has_data_double(self):
         response = Response(
-            url="example.com",
+            url=URL("example.com"),
             status=200,
             backend_response=DummyBackendResponse(b"some-data"),
         )
@@ -52,8 +53,8 @@ class TestResponse:
         assert await response.read() == b"some-data"
 
     async def test_ctx_mgr_not_closable(self):
-        response = Response[Any](
-            url="example.com", status=200, backend_response=DummyBackendResponse()
+        response = Response(
+            url=URL("example.com"), status=200, backend_response=DummyBackendResponse()
         )
 
         async with response as resp:
@@ -73,8 +74,8 @@ class TestResponse:
             async def read(self) -> bytes:
                 return b""  # pragma: no cover
 
-        response = Response[Any](
-            url="example.com", status=200, backend_response=_Resp()
+        response = Response(
+            url=URL("example.com"), status=200, backend_response=_Resp()
         )
 
         async with response as resp:
@@ -100,8 +101,8 @@ class TestResponse:
             async def json(self, **kwargs) -> Any:
                 return None  # pragma: no cover
 
-        response = Response[Any](
-            url="example.com", status=200, backend_response=_Resp()
+        response = Response(
+            url=URL("example.com"), status=200, backend_response=_Resp()
         )
 
         async with response as resp:
