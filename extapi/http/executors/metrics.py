@@ -31,8 +31,10 @@ class PrometheusMetricsExecutor(WrappedExecutor[T], Generic[T]):
         if path_template is None:
             warnings.warn(
                 "It is highly recommended to pass `path_template` "
-                "argument to the executor in order to to not blow the l"
-                "abel cardinality when path is customized",
+                "argument to the executor in order to not explode the "
+                "label cardinality when path is customized on each request. "
+                "For example, you may pass path_template='/some/items/<item_id>' "
+                "when executing request like `GET /some/items/123`.",
                 UserWarning,
                 stacklevel=1,
             )

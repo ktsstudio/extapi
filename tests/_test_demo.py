@@ -61,7 +61,7 @@ async def demo2():
         )
 
         async with await executor.get(
-            "https://ifconfig.co/json", path_template="/json"
+            "https://ifconfig.co/json"  # , path_template="/json"
         ) as response:
             print(await response.read())
             print(response.backend_response.original().headers)
