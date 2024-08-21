@@ -20,7 +20,7 @@ from extapi.http.types import RequestData, Response
 
 from .wrapped import WrappedExecutor
 
-T = TypeVar("T")
+T = TypeVar("T", covariant=True)
 
 extapi_tracer = trace.get_tracer(__name__)
 

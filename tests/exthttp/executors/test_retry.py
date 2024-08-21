@@ -10,6 +10,7 @@ from extapi.http.addons.auth import BearerAuthAddon
 from extapi.http.addons.retry import Retry5xxAddon
 from extapi.http.executors.retry import RetryableExecutor
 from extapi.http.types import ExecuteError, HttpExecuteError, RequestData, Response
+from tests.exthttp._helpers import DummyBackendResponse
 
 
 class _DummyExecutor(AbstractExecutor[Any]):
@@ -32,7 +33,11 @@ class _DummyExecutor(AbstractExecutor[Any]):
             raise response
 
         if isinstance(response, int):
-            return Response(status=response, backend_response="heyo", url=request.url)
+            return Response(
+                status=response,
+                backend_response=DummyBackendResponse(),
+                url=request.url,
+            )
 
         raise BaseException(
             f"unexpected response type: {type(response)}"
@@ -42,17 +47,18 @@ class _DummyExecutor(AbstractExecutor[Any]):
 class TestRetryExecutor:
     async def test_basic(self, request_simple: RequestData):
         base = _DummyExecutor()
-        executor = RetryableExecutor(base, retry_sleep_timeout=0)
+        executor = RetryableExecutor(base, retry_sleep_timeout=0, default_addons=())
 
         response = await executor.execute(request_simple)
 
         assert response.status == 200
-        assert response.backend_response == "heyo"
         assert response.url == request_simple.url
 
     async def test_retry_500_no_addon(self, request_simple: RequestData):
         base = _DummyExecutor(responses=[500, 200])
-        executor = RetryableExecutor(base, max_retries=2, retry_sleep_timeout=0)
+        executor = RetryableExecutor(
+            base, max_retries=2, retry_sleep_timeout=0, default_addons=()
+        )
 
         response = await executor.execute(request_simple)
 
@@ -68,6 +74,7 @@ class TestRetryExecutor:
             addons=[
                 Retry5xxAddon(),
             ],
+            default_addons=(),
         )
 
         response = await executor.execute(request_simple)
@@ -84,6 +91,7 @@ class TestRetryExecutor:
             addons=[
                 Retry5xxAddon(),
             ],
+            default_addons=(),
         )
 
         response = await executor.execute(request_simple)
@@ -100,6 +108,7 @@ class TestRetryExecutor:
             addons=[
                 Retry5xxAddon(),
             ],
+            default_addons=(),
         )
 
         response = await executor.execute(request_simple)
@@ -114,6 +123,7 @@ class TestRetryExecutor:
             max_retries=2,
             retry_sleep_timeout=0,
             addons=[BearerAuthAddon(lambda: "token")],
+            default_addons=(),
         )
 
         response = await executor.execute(request_simple)
@@ -128,6 +138,7 @@ class TestRetryExecutor:
             max_retries=3,
             retry_sleep_timeout=0,
             addons=[BearerAuthAddon(lambda: "token")],
+            default_addons=(),
         )
 
         response = await executor.execute(request_simple)
@@ -142,8 +153,9 @@ class TestRetryExecutor:
             max_retries=2,
             retry_sleep_timeout=0,
             addons=[
-                Retry5xxAddon(retry_timeout=1),
+                Retry5xxAddon(default_timeout=1),
             ],
+            default_addons=(),
         )
 
         started_at = time.monotonic()
@@ -157,7 +169,9 @@ class TestRetryExecutor:
 
     async def test_timeout_error(self, request_simple: RequestData):
         base = _DummyExecutor(responses=[TimeoutError, TimeoutError(), 200])
-        executor = RetryableExecutor(base, max_retries=3, retry_sleep_timeout=0)
+        executor = RetryableExecutor(
+            base, max_retries=3, retry_sleep_timeout=0, default_addons=()
+        )
 
         response = await executor.execute(request_simple)
 
@@ -166,7 +180,9 @@ class TestRetryExecutor:
 
     async def test_timeout_error_propagate(self, request_simple: RequestData):
         base = _DummyExecutor(responses=[TimeoutError, 200])
-        executor = RetryableExecutor(base, max_retries=1, retry_sleep_timeout=0)
+        executor = RetryableExecutor(
+            base, max_retries=1, retry_sleep_timeout=0, default_addons=()
+        )
 
         with pytest.raises(ExecuteError) as err:
             await executor.execute(request_simple)
@@ -175,7 +191,9 @@ class TestRetryExecutor:
 
     async def test_exception_success(self, request_simple: RequestData):
         base = _DummyExecutor(responses=[Exception("some error"), 200])
-        executor = RetryableExecutor(base, max_retries=3, retry_sleep_timeout=0)
+        executor = RetryableExecutor(
+            base, max_retries=3, retry_sleep_timeout=0, default_addons=()
+        )
 
         response = await executor.execute(request_simple)
 
@@ -184,7 +202,9 @@ class TestRetryExecutor:
 
     async def test_exception_propagate(self, request_simple: RequestData):
         base = _DummyExecutor(responses=[Exception("some error"), 200])
-        executor = RetryableExecutor(base, max_retries=1, retry_sleep_timeout=0)
+        executor = RetryableExecutor(
+            base, max_retries=1, retry_sleep_timeout=0, default_addons=()
+        )
 
         with pytest.raises(Exception) as err:
             await executor.execute(request_simple)
@@ -192,9 +212,13 @@ class TestRetryExecutor:
         assert str(err.value) == "request failed after 1 retries: Exception(some error)"
 
     async def test_propagate_execute_error(self, request_simple: RequestData):
-        resp = Response(status=404, backend_response=None, url=request_simple.url)
+        resp = Response(
+            status=404, backend_response=DummyBackendResponse(), url=request_simple.url
+        )
         base = _DummyExecutor(responses=[HttpExecuteError(resp), 200])
-        executor = RetryableExecutor(base, max_retries=1, retry_sleep_timeout=0)
+        executor = RetryableExecutor(
+            base, max_retries=1, retry_sleep_timeout=0, default_addons=()
+        )
 
         with pytest.raises(ExecuteError) as err:
             await executor.execute(request_simple)
@@ -210,7 +234,11 @@ class TestRetryExecutor:
 
         base = _DummyExecutor(responses=[Exception("some error"), 200])
         executor = RetryableExecutor(
-            base, max_retries=1, retry_sleep_timeout=0, addons=[_Addon()]
+            base,
+            max_retries=1,
+            retry_sleep_timeout=0,
+            addons=[_Addon()],
+            default_addons=(),
         )
 
         with pytest.raises(ExecuteError) as err:
@@ -227,7 +255,11 @@ class TestRetryExecutor:
 
         base = _DummyExecutor(responses=[Exception("some error"), 200])
         executor = RetryableExecutor(
-            base, max_retries=2, retry_sleep_timeout=0, addons=[_Addon()]
+            base,
+            max_retries=2,
+            retry_sleep_timeout=0,
+            addons=[_Addon()],
+            default_addons=(),
         )
 
         response = await executor.execute(request_simple)

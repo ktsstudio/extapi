@@ -8,6 +8,7 @@ from extapi.http.addons.auth import (
     StaticBearerAuthAddon,
 )
 from extapi.http.types import RequestData, Response
+from tests.exthttp._helpers import DummyBackendResponse
 
 
 class TestBearerAuthAddon:
@@ -79,7 +80,11 @@ class TestBearerAuthAddon:
 
         addon = BearerAuthAddon[Any](getter)
         need_retry, timeout = await addon.need_retry(
-            Response(url=request_simple.url, status=200, backend_response=None)
+            Response(
+                url=request_simple.url,
+                status=200,
+                backend_response=DummyBackendResponse(),
+            )
         )
 
         assert need_retry is False
@@ -91,7 +96,11 @@ class TestBearerAuthAddon:
 
         addon = BearerAuthAddon[Any](getter)
         need_retry, timeout = await addon.need_retry(
-            Response(url=request_simple.url, status=401, backend_response=None)
+            Response(
+                url=request_simple.url,
+                status=401,
+                backend_response=DummyBackendResponse(),
+            )
         )
 
         assert need_retry is True
@@ -109,7 +118,11 @@ class TestStaticBearerAuthAddon:
     async def test_need_retry(self, request_simple: RequestData):
         addon = StaticBearerAuthAddon[Any]("test-token")
         need_retry, timeout = await addon.need_retry(
-            Response(url=request_simple.url, status=401, backend_response=None)
+            Response(
+                url=request_simple.url,
+                status=401,
+                backend_response=DummyBackendResponse(),
+            )
         )
 
         assert need_retry is False
@@ -134,7 +147,11 @@ class TestStaticBasicAuthAddon:
 
         addon = StaticBasicAuthAddon[Any](login=login, password=password)
         need_retry, timeout = await addon.need_retry(
-            Response(url=request_simple.url, status=401, backend_response=None)
+            Response(
+                url=request_simple.url,
+                status=401,
+                backend_response=DummyBackendResponse(),
+            )
         )
 
         assert need_retry is False

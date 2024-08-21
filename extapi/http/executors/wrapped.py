@@ -3,7 +3,7 @@ from typing import Generic, TypeVar
 from extapi.http.abc import AbstractExecutor
 from extapi.http.types import RequestData, Response
 
-T = TypeVar("T")
+T = TypeVar("T", covariant=True)
 
 
 class WrappedExecutor(AbstractExecutor[T], Generic[T]):

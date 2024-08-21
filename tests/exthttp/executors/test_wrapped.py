@@ -10,5 +10,4 @@ class TestWrappedExecutor:
 
         resp = await executor.execute(request_simple)
         assert resp.status == 200
-        assert resp.backend_response == "heyo"
         assert resp.url == request_simple.url

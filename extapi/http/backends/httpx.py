@@ -1,45 +1,56 @@
 import abc
-from collections.abc import Sequence
-from typing import Any
 
 import httpx
 from multidict import CIMultiDict
 from yarl import URL
 
 from extapi.http.abc import AbstractExecutor
-from extapi.http.types import Closable, RequestData, Response
+from extapi.http.types import BackendResponseProtocol, RequestData, Response
 
 
-class HttpxResponseWrap(Closable):
-    __slots__ = ("original",)
+class HttpxResponseWrap(BackendResponseProtocol[httpx.Response]):
+    __slots__ = ("_original",)
 
     def __init__(self, response: httpx.Response):
-        self.original = response
+        self._original = response
+
+    def original(self) -> httpx.Response:
+        return self._original
 
     async def close(self) -> None:
-        return await self.original.aclose()
+        return await self._original.aclose()
+
+    async def read(self) -> bytes:
+        return await self._original.aread()
 
 
-class _BaseHttpxExecutor(AbstractExecutor[HttpxResponseWrap], metaclass=abc.ABCMeta):
+class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
     __slots__ = (
         "_client",
         "_default_timeout",
     )
 
     def __init__(
-        self, *, check_ssl: bool = True, default_timeout: float = 10.0, **kwargs
+        self,
+        *,
+        check_ssl: bool = True,
+        default_timeout: float = 10.0,
+        follow_redirects: bool = True,
+        **kwargs,
     ):
         super().__init__()
         verify = kwargs.pop("verify", None)
         if verify is None:
             verify = check_ssl
-        self._client = httpx.AsyncClient(verify=verify, **kwargs)
+        self._client = httpx.AsyncClient(
+            verify=verify, follow_redirects=follow_redirects, **kwargs
+        )
         self._default_timeout = default_timeout
 
     async def close(self):
         await self._client.aclose()
 
-    async def execute(self, request: RequestData) -> Response[HttpxResponseWrap]:
+    async def execute(self, request: RequestData) -> Response[httpx.Response]:
         timeout = request.timeout or self._default_timeout
         url = request.url
 
@@ -51,7 +62,7 @@ class _BaseHttpxExecutor(AbstractExecutor[HttpxResponseWrap], metaclass=abc.ABCM
         else:
             httpx_headers = [(k, str(v)) for k, v in request.headers.items()]
 
-        return await self._get_response(
+        response = await self._client.stream(
             method=request.method,
             url=url,
             params=request.params,
@@ -60,83 +71,9 @@ class _BaseHttpxExecutor(AbstractExecutor[HttpxResponseWrap], metaclass=abc.ABCM
             headers=httpx_headers,
             timeout=timeout,
             **request.kwargs,
-        )
-
-    @abc.abstractmethod
-    async def _get_response(
-        self,
-        method: str,
-        url: str,
-        *,
-        params: dict[str, str] | None = None,
-        json: Any = None,
-        data: Any = None,
-        headers: Sequence[tuple[str, str]],
-        timeout: Any | float | None = None,
-        **kwargs,
-    ) -> Response[HttpxResponseWrap]:
-        raise NotImplementedError
-
-
-class HttpxExecutor(_BaseHttpxExecutor):
-    async def _get_response(
-        self,
-        method: str,
-        url: str,
-        *,
-        params: dict[str, str] | None = None,
-        json: Any = None,
-        data: Any = None,
-        headers: Sequence[tuple[str, str]],
-        timeout: Any | float | None = None,
-        **kwargs,
-    ) -> Response[HttpxResponseWrap]:
-        response = await self._client.request(
-            method=method,
-            url=url,
-            params=params,
-            json=json,
-            data=data,
-            headers=headers,
-            timeout=timeout,  # type: ignore[arg-type]
-            **kwargs,
-        )
-
-        result = Response[HttpxResponseWrap](
-            url=url,
-            status=response.status_code,
-            headers=CIMultiDict(response.headers),
-            backend_response=HttpxResponseWrap(response),
-        )
-        result.set_data(response.content)
-        return result
-
-
-class HttpxStreamingExecutor(_BaseHttpxExecutor):
-    async def _get_response(
-        self,
-        method: str,
-        url: str,
-        *,
-        params: dict[str, str] | None = None,
-        json: Any = None,
-        data: Any = None,
-        headers: Sequence[tuple[str, str]],
-        timeout: Any | float | None = None,
-        **kwargs,
-    ) -> Response[HttpxResponseWrap]:
-        response = await self._client.stream(
-            method=method,
-            url=url,
-            params=params,
-            json=json,
-            data=data,
-            headers=headers,
-            timeout=timeout,
-            **kwargs,
         ).__aenter__()
 
-        return Response[HttpxResponseWrap](
+        return Response[httpx.Response](
             url=url,
             status=response.status_code,
             headers=CIMultiDict(response.headers),

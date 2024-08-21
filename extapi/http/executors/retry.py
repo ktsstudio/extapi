@@ -1,14 +1,26 @@
 import asyncio
+import itertools
 import logging
 from collections.abc import Iterable
+from types import EllipsisType
 from typing import Generic, TypeVar
 
 from extapi.http.abc import AbstractExecutor, Addon, Retryable
 from extapi.http.types import ExecuteError, HttpExecuteError, RequestData, Response
 
+from ..addons.log import LoggingAddon
+from ..addons.retry import Retry5xxAddon, Retry429Addon
 from .wrapped import WrappedExecutor
 
-T = TypeVar("T")
+T = TypeVar("T", covariant=True)
+
+
+def get_default_addons() -> list[Addon[T] | Retryable[T]]:
+    return [
+        Retry5xxAddon(),
+        Retry429Addon(),
+        LoggingAddon(),
+    ]
 
 
 class RetryableExecutor(WrappedExecutor[T], Generic[T]):
@@ -29,6 +41,7 @@ class RetryableExecutor(WrappedExecutor[T], Generic[T]):
         retry_sleep_timeout: float = 3.0,
         log_retries: bool = True,
         addons: Iterable[Addon[T] | Retryable[T]] = (),
+        default_addons: Iterable[Addon[T] | Retryable[T]] | EllipsisType = ...,
     ):
         assert max_retries > 0
 
@@ -37,11 +50,21 @@ class RetryableExecutor(WrappedExecutor[T], Generic[T]):
         self._max_retries = max_retries
         self._retry_sleep_timeout = retry_sleep_timeout
         self._log_retries = log_retries
+
+        if default_addons is ...:
+            default_addons = get_default_addons()
+
+        addons = list(addons)
+
         self._addons: list[Addon[T]] = [
-            addon for addon in addons if isinstance(addon, Addon)
+            addon
+            for addon in itertools.chain(addons, default_addons)
+            if isinstance(addon, Addon)
         ]
         self._retry_addons: list[Retryable[T]] = [
-            addon for addon in addons if isinstance(addon, Retryable)
+            addon
+            for addon in itertools.chain(addons, default_addons)
+            if isinstance(addon, Retryable)
         ]
 
     async def _before_request(self, request: RequestData):

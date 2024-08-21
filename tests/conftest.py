@@ -4,6 +4,7 @@ import pytest
 from multidict import CIMultiDict
 
 from extapi.http.types import RequestData, Response
+from tests.exthttp._helpers import DummyBackendResponse
 
 
 @pytest.fixture
@@ -32,6 +33,6 @@ def response_simple(request_simple: RequestData) -> Response[Any]:
     return Response(
         url=request_simple.url,
         status=200,
-        backend_response=None,
+        backend_response=DummyBackendResponse(),
         _data=b"",
     )

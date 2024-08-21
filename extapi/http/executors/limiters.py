@@ -7,7 +7,7 @@ from extapi.limiters.rps.abc import RateLimiter
 
 from .wrapped import WrappedExecutor
 
-T = TypeVar("T")
+T = TypeVar("T", covariant=True)
 
 
 class ConcurrencyLimitedExecutor(WrappedExecutor[T]):

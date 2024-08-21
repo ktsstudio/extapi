@@ -2,6 +2,8 @@ import json as jsonlib
 import logging
 from typing import Generic, TypeVar
 
+from yarl import URL
+
 from extapi.http.abc import Addon
 from extapi.http.types import HttpExecuteError, RequestData, Response
 
@@ -9,15 +11,27 @@ T = TypeVar("T")
 
 
 class LoggingAddon(Addon[T], Generic[T]):
-    def __init__(self):
+    def __init__(self, *, log_params: bool = True):
         self._logger = logging.getLogger("extapi.http.addons.log")
+        self._log_params = log_params
+
+    def _get_url(self, request: RequestData) -> URL:
+        url_ = URL(request.url) if not isinstance(request.url, URL) else request.url
+
+        if self._log_params and request.params:
+            return url_.with_query(request.params)
+
+        return url_
 
     async def before_request(self, request: RequestData) -> None:
-        self._logger.debug("executing request %s %s", request.method, str(request.url))
+        url = self._get_url(request)
+        self._logger.debug("executing request %s %s", request.method, str(url))
 
     async def process_response(
         self, request: RequestData, response: Response[T]
     ) -> Response[T]:
+        url = self._get_url(request)
+
         logger_method = (
             self._logger.debug if response.status < 500 else self._logger.error
         )
@@ -25,18 +39,20 @@ class LoggingAddon(Addon[T], Generic[T]):
         logger_method(
             "received response %s %s -> status=%s",
             request.method,
-            str(request.url),
+            str(url),
             response.status if response is not None else "unknown",
         )
 
         return response
 
     async def process_error(self, request: RequestData, error: Exception) -> None:
+        url = self._get_url(request)
+
         if isinstance(error, TimeoutError):
             self._logger.error(
                 "timeout error for request %s %s failed with error %s(%s)",
                 request.method,
-                str(request.url),
+                str(url),
                 type(error).__name__,
                 str(error),
             )
@@ -46,7 +62,7 @@ class LoggingAddon(Addon[T], Generic[T]):
             self._logger.error(
                 "request %s %s failed with error %s(%s)",
                 request.method,
-                str(request.url),
+                str(url),
                 type(error).__name__,
                 error,
             )
@@ -56,12 +72,17 @@ class VerboseLoggingExecutor(LoggingAddon[T], Generic[T]):
     def __init__(
         self,
         *,
+        log_params: bool = True,
+        log_response_data: bool = True,
         truncate_response_data: int | None = 1024,
     ):
-        super().__init__()
+        super().__init__(log_params=log_params)
+        self._log_response_data = log_response_data
         self._truncate_response_data = truncate_response_data
 
     async def before_request(self, request: RequestData) -> None:
+        url = self._get_url(request)
+
         json = request.json
         if json is not None:
             if isinstance(json, bytes):
@@ -71,7 +92,7 @@ class VerboseLoggingExecutor(LoggingAddon[T], Generic[T]):
         self._logger.debug(
             "executing request %s %s with params=%s json=%s data=%s timeout=%s",
             request.method,
-            str(request.url),
+            str(url),
             request.params,
             json,
             request.data,
@@ -81,18 +102,22 @@ class VerboseLoggingExecutor(LoggingAddon[T], Generic[T]):
     async def process_response(
         self, request: RequestData, response: Response[T]
     ) -> Response[T]:
+        url = self._get_url(request)
+
         logger_method = (
             self._logger.debug if response.status < 500 else self._logger.error
         )
-
-        resp_body = response.data.decode("utf-8") if response.has_data else None
-        if resp_body is not None and self._truncate_response_data is not None:
-            resp_body = resp_body[: self._truncate_response_data]
+        resp_body: str | None = None
+        if self._log_response_data:
+            resp_body_bytes = await response.read()
+            if self._truncate_response_data is not None:
+                resp_body_bytes = resp_body_bytes[: self._truncate_response_data]
+            resp_body = resp_body_bytes.decode("utf-8")
 
         logger_method(
             "received response %s %s -> status=%s headers=%s body=%s",
             request.method,
-            str(request.url),
+            str(url),
             response.status,
             response.headers,
             resp_body,

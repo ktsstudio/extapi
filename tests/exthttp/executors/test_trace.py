@@ -7,6 +7,7 @@ from opentelemetry.semconv.trace import SpanAttributes
 from extapi.http.abc import AbstractExecutor
 from extapi.http.executors.trace import OpenTelemetryExecutor
 from extapi.http.types import RequestData, Response
+from tests.exthttp._helpers import DummyBackendResponse
 
 
 @pytest.fixture
@@ -26,8 +27,8 @@ class TestOpenTelemetryExecutor:
     ):
         executed = False
 
-        class _Catcher(AbstractExecutor[str]):
-            async def execute(self, request: RequestData) -> Response[str]:
+        class _Catcher(AbstractExecutor[bytes]):
+            async def execute(self, request: RequestData) -> Response[bytes]:
                 nonlocal executed
                 executed = True
 
@@ -44,7 +45,9 @@ class TestOpenTelemetryExecutor:
                 assert span.attributes.get(SpanAttributes.URL_SCHEME) == "https"
                 assert span.attributes.get(SpanAttributes.URL_PATH) == "/"
 
-                return Response(status=200, url=request.url, backend_response="heyo")
+                return Response(
+                    status=200, url=request.url, backend_response=DummyBackendResponse()
+                )
 
         base = _Catcher()
         tracer = trace_provider.get_tracer("tests")
@@ -61,15 +64,17 @@ class TestOpenTelemetryExecutor:
     ):
         executed = False
 
-        class _Catcher(AbstractExecutor[str]):
-            async def execute(self, request: RequestData) -> Response[str]:
+        class _Catcher(AbstractExecutor[bytes]):
+            async def execute(self, request: RequestData) -> Response[bytes]:
                 nonlocal executed
                 executed = True
 
                 assert request.headers is not None
                 assert request.headers.get("traceparent") is not None
 
-                return Response(status=200, url=request.url, backend_response="heyo")
+                return Response(
+                    status=200, url=request.url, backend_response=DummyBackendResponse()
+                )
 
         base = _Catcher()
         tracer = trace_provider.get_tracer("tests")
@@ -83,8 +88,8 @@ class TestOpenTelemetryExecutor:
     ):
         executed = False
 
-        class _Catcher(AbstractExecutor[str]):
-            async def execute(self, request: RequestData) -> Response[str]:
+        class _Catcher(AbstractExecutor[bytes]):
+            async def execute(self, request: RequestData) -> Response[bytes]:
                 nonlocal executed
                 executed = True
 
@@ -93,7 +98,9 @@ class TestOpenTelemetryExecutor:
                     or request.headers.get("traceparent") is None
                 )
 
-                return Response(status=200, url=request.url, backend_response="heyo")
+                return Response(
+                    status=200, url=request.url, backend_response=DummyBackendResponse()
+                )
 
         base = _Catcher()
         tracer = trace_provider.get_tracer("tests")

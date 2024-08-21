@@ -1,34 +1,41 @@
 from typing import Any
 
-import pytest
 from multidict import CIMultiDict
 
-from extapi.http.types import Closable, Response
+from extapi.http.types import BackendResponseProtocol, Response
+from tests.exthttp._helpers import DummyBackendResponse
 
 
 class TestResponse:
-    def test_no_data(self):
-        response = Response[Any](url="example.com", status=200, backend_response=None)
+    async def test_has_data(self):
+        response = Response(
+            url="example.com",
+            status=200,
+            backend_response=DummyBackendResponse(b"some-data"),
+        )
+
         assert response.status == 200
         assert response.headers == CIMultiDict()
-        assert response.has_data is False
+        assert await response.read() == b"some-data"
 
-        with pytest.raises(ValueError) as e:
-            _ = response.data
+    async def test_has_data_double(self):
+        response = Response(
+            url="example.com",
+            status=200,
+            backend_response=DummyBackendResponse(b"some-data"),
+        )
 
-        assert str(e.value) == "data is not available"
-
-    def test_has_data(self):
-        response = Response[Any](url="example.com", status=200, backend_response=None)
-
-        response.set_data(b"some-data")
         assert response.status == 200
         assert response.headers == CIMultiDict()
-        assert response.has_data is True
-        assert response.data == b"some-data"
+        assert response._data is None
+        assert await response.read() == b"some-data"
+        assert response._data is not None
+        assert await response.read() == b"some-data"
 
     async def test_ctx_mgr_not_closable(self):
-        response = Response[Any](url="example.com", status=200, backend_response=None)
+        response = Response[Any](
+            url="example.com", status=200, backend_response=DummyBackendResponse()
+        )
 
         async with response as resp:
             assert resp is response
@@ -36,10 +43,16 @@ class TestResponse:
     async def test_ctx_mgr_closable_inherited(self):
         called = False
 
-        class _Resp(Closable):
+        class _Resp(BackendResponseProtocol[bytes]):
+            def original(self) -> bytes:
+                return b""
+
             async def close(self) -> None:
                 nonlocal called
                 called = True
+
+            async def read(self) -> bytes:
+                return b""  # pragma: no cover
 
         response = Response[Any](
             url="example.com", status=200, backend_response=_Resp()
@@ -55,9 +68,15 @@ class TestResponse:
         called = False
 
         class _Resp:
+            def original(self) -> bytes:
+                return b""
+
             async def close(self) -> None:
                 nonlocal called
                 called = True
+
+            async def read(self) -> bytes:
+                return b""  # pragma: no cover
 
         response = Response[Any](
             url="example.com", status=200, backend_response=_Resp()

@@ -5,10 +5,12 @@ from multidict import CIMultiDict
 
 from .types import RequestData, Response, StrOrURL
 
+T_co = TypeVar("T_co", covariant=True)
+T_contr = TypeVar("T_contr", contravariant=True)
 T = TypeVar("T")
 
 
-class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
+class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
     async def start(self) -> None:
         return None
 
@@ -22,14 +24,14 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         await self.close()
 
-    def generalize(self) -> "AbstractExecutor[T]":
+    def generalize(self) -> "AbstractExecutor[T_co]":
         return self
 
     @abc.abstractmethod
     async def execute(
         self,
         request: RequestData,
-    ) -> Response[T]:
+    ) -> Response[T_co]:
         raise NotImplementedError  # pragma: no cover
 
     async def get(
@@ -42,7 +44,7 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
         headers: CIMultiDict | None = None,
         timeout: Any | float | None = None,
         **kwargs,
-    ) -> Response[T]:
+    ) -> Response[T_co]:
         return await self.execute(
             RequestData(
                 method="GET",
@@ -66,7 +68,7 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
         headers: CIMultiDict | None = None,
         timeout: Any | float | None = None,
         **kwargs,
-    ) -> Response[T]:
+    ) -> Response[T_co]:
         return await self.execute(
             RequestData(
                 method="POST",
@@ -90,7 +92,7 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
         headers: CIMultiDict | None = None,
         timeout: Any | float | None = None,
         **kwargs,
-    ) -> Response[T]:
+    ) -> Response[T_co]:
         return await self.execute(
             RequestData(
                 method="DELETE",
@@ -114,7 +116,7 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
         headers: CIMultiDict | None = None,
         timeout: Any | float | None = None,
         **kwargs,
-    ) -> Response[T]:
+    ) -> Response[T_co]:
         return await self.execute(
             RequestData(
                 method="PUT",
@@ -138,7 +140,7 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
         headers: CIMultiDict | None = None,
         timeout: Any | float | None = None,
         **kwargs,
-    ) -> Response[T]:
+    ) -> Response[T_co]:
         return await self.execute(
             RequestData(
                 method="PATCH",
@@ -154,8 +156,10 @@ class AbstractExecutor(Generic[T], metaclass=abc.ABCMeta):
 
 
 @runtime_checkable
-class Retryable(Protocol[T]):
-    async def need_retry(self, response: Response[T]) -> tuple[bool, float | None]: ...
+class Retryable(Protocol[T_contr]):
+    async def need_retry(
+        self, response: Response[T_contr]
+    ) -> tuple[bool, float | None]: ...
 
 
 @runtime_checkable

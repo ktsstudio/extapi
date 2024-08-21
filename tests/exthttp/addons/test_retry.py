@@ -5,6 +5,7 @@ from multidict import CIMultiDict
 
 from extapi.http.addons.retry import Retry5xxAddon, Retry429Addon
 from extapi.http.types import Response
+from tests.exthttp._helpers import DummyBackendResponse
 
 
 class TestRetry5xx:
@@ -12,7 +13,9 @@ class TestRetry5xx:
     async def test_ok(self, status: int):
         addon = Retry5xxAddon[Any]()
 
-        response = Response(url="", status=status, backend_response=None)
+        response = Response(
+            url="", status=status, backend_response=DummyBackendResponse()
+        )
         need_retry, timeout = await addon.need_retry(response)
 
         assert need_retry is False
@@ -24,7 +27,9 @@ class TestRetry5xx:
     async def test_5xx(self, status: int):
         addon = Retry5xxAddon[Any]()
 
-        response = Response(url="", status=status, backend_response=None)
+        response = Response(
+            url="", status=status, backend_response=DummyBackendResponse()
+        )
 
         need_retry, timeout = await addon.need_retry(response)
 
@@ -44,7 +49,7 @@ class TestRetry429:
     async def test_429_no_header(self):
         addon = Retry429Addon[Any]()
 
-        response = Response(url="", status=429, backend_response=None)
+        response = Response(url="", status=429, backend_response=DummyBackendResponse())
 
         need_retry, timeout = await addon.need_retry(response)
 
@@ -57,7 +62,7 @@ class TestRetry429:
         response = Response(
             url="",
             status=429,
-            backend_response=None,
+            backend_response=DummyBackendResponse(),
             headers=CIMultiDict({"retry-after": "42"}),
         )
 
@@ -72,7 +77,7 @@ class TestRetry429:
         response = Response(
             url="",
             status=429,
-            backend_response=None,
+            backend_response=DummyBackendResponse(),
             headers=CIMultiDict({"retry-after": "invalid-number"}),
         )
 
