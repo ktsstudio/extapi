@@ -1,9 +1,15 @@
+from collections.abc import Callable
 from typing import Any
 
 import aiohttp
 
 from extapi.http.abc import AbstractExecutor
-from extapi.http.types import BackendResponseProtocol, RequestData, Response
+from extapi.http.types import (
+    DEFAULT_JSON_DECODER,
+    BackendResponseProtocol,
+    RequestData,
+    Response,
+)
 
 
 class AiohttpResponseWrap(BackendResponseProtocol[aiohttp.ClientResponse]):
@@ -21,6 +27,14 @@ class AiohttpResponseWrap(BackendResponseProtocol[aiohttp.ClientResponse]):
 
     async def read(self) -> bytes:
         return await self._original.read()
+
+    async def json(
+        self,
+        *,
+        encoding: str | None,
+        loads: Callable[[str], Any] = DEFAULT_JSON_DECODER,
+    ) -> Any:
+        return await self._original.json(encoding=encoding, loads=loads)
 
 
 class AiohttpExecutor(AbstractExecutor[aiohttp.ClientResponse]):

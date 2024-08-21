@@ -1,6 +1,8 @@
+import json
 from dataclasses import dataclass, field
 from typing import (
     Any,
+    Callable,
     Generic,
     Literal,
     Protocol,
@@ -14,6 +16,8 @@ from yarl import URL
 
 HttpMethod = Literal["GET", "POST", "PUT", "PATCH", "DELETE"] | str
 StrOrURL = str | URL
+
+DEFAULT_JSON_DECODER = json.loads
 
 
 @dataclass(slots=True, kw_only=True)
@@ -34,8 +38,23 @@ T = TypeVar("T", covariant=True)
 @runtime_checkable
 class BackendResponseProtocol(Protocol[T]):
     def original(self) -> T: ...
+
     async def close(self) -> None: ...
+
     async def read(self) -> bytes: ...
+
+    async def json(
+        self,
+        *,
+        encoding: str | None,
+        loads: Callable[[str], Any] = DEFAULT_JSON_DECODER,
+    ) -> Any:
+        data = await self.read()
+        if encoding is None:
+            s = data.decode()
+        else:
+            s = data.decode(encoding=encoding)
+        return loads(s)
 
 
 @dataclass(kw_only=True)
@@ -53,6 +72,14 @@ class Response(Generic[T]):
 
         self._data = await self.backend_response.read()
         return self._data
+
+    async def json(
+        self,
+        *,
+        encoding: str | None = None,
+        loads: Callable[[str], Any] = DEFAULT_JSON_DECODER,
+    ) -> Any:
+        return await self.backend_response.json(encoding=encoding, loads=loads)
 
     async def __aenter__(self) -> Self:
         return self

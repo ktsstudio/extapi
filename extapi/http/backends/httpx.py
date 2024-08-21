@@ -5,7 +5,11 @@ from multidict import CIMultiDict
 from yarl import URL
 
 from extapi.http.abc import AbstractExecutor
-from extapi.http.types import BackendResponseProtocol, RequestData, Response
+from extapi.http.types import (
+    BackendResponseProtocol,
+    RequestData,
+    Response,
+)
 
 
 class HttpxResponseWrap(BackendResponseProtocol[httpx.Response]):

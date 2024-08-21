@@ -266,3 +266,16 @@ class TestRetryExecutor:
 
         assert response.status == 200
         assert base.call_count == 2
+
+    async def test_default_addons(self, request_simple: RequestData):
+        base = _DummyExecutor(responses=[500, 429, 200])
+        executor = RetryableExecutor(
+            base,
+            max_retries=3,
+            retry_sleep_timeout=0,
+        )
+
+        response = await executor.execute(request_simple)
+
+        assert response.status == 200
+        assert base.call_count == 3

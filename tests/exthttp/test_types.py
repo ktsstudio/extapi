@@ -18,6 +18,25 @@ class TestResponse:
         assert response.headers == CIMultiDict()
         assert await response.read() == b"some-data"
 
+    async def test_json(self):
+        response = Response(
+            url="example.com",
+            status=200,
+            backend_response=DummyBackendResponse(b'{"a": 1, "b": [10, 20]}'),
+        )
+
+        assert response.status == 200
+        assert response.headers == CIMultiDict()
+        assert await response.json() == {
+            "a": 1,
+            "b": [10, 20],
+        }
+
+        assert await response.json(encoding="latin-1") == {
+            "a": 1,
+            "b": [10, 20],
+        }
+
     async def test_has_data_double(self):
         response = Response(
             url="example.com",
@@ -77,6 +96,9 @@ class TestResponse:
 
             async def read(self) -> bytes:
                 return b""  # pragma: no cover
+
+            async def json(self, **kwargs) -> Any:
+                return None  # pragma: no cover
 
         response = Response[Any](
             url="example.com", status=200, backend_response=_Resp()
