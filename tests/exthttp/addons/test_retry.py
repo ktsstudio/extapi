@@ -15,6 +15,7 @@ class TestRetry5xx:
         addon = Retry5xxAddon[Any]()
 
         response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=status,
             backend_response=DummyBackendResponse(),
@@ -31,6 +32,7 @@ class TestRetry5xx:
         addon = Retry5xxAddon[Any]()
 
         response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=status,
             backend_response=DummyBackendResponse(),
@@ -55,6 +57,7 @@ class TestRetry429:
         addon = Retry429Addon[Any]()
 
         response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=429,
             backend_response=DummyBackendResponse(),
@@ -69,6 +72,7 @@ class TestRetry429:
         addon = Retry429Addon[Any]()
 
         response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=429,
             backend_response=DummyBackendResponse(),
@@ -84,6 +88,7 @@ class TestRetry429:
         addon = Retry429Addon[Any]()
 
         response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=429,
             backend_response=DummyBackendResponse(),

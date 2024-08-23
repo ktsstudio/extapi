@@ -14,3 +14,16 @@ class WrappedExecutor(AbstractExecutor[T], Generic[T]):
 
     async def execute(self, request: RequestData) -> Response[T]:
         return await self._executor.execute(request)
+
+
+def unwrap_executor(executor: AbstractExecutor[T]) -> AbstractExecutor[T]:
+    seen = set()
+    while True:
+        if executor in seen:
+            raise RuntimeError("Circular reference in executors detected")
+
+        if isinstance(executor, WrappedExecutor):
+            seen.add(executor)
+            executor = executor._executor
+        else:
+            return executor

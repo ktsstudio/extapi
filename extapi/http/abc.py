@@ -1,4 +1,5 @@
 import abc
+from collections.abc import Mapping
 from typing import Any, Generic, Protocol, Self, TypeVar, runtime_checkable
 
 from multidict import CIMultiDict
@@ -42,7 +43,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         params: dict[str, str] | None = None,
         json: Any = None,
         data: Any = None,
-        headers: CIMultiDict | None = None,
+        headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
         **kwargs,
     ) -> Response[T_co]:
@@ -53,7 +54,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 params=params,
                 json=json,
                 data=data,
-                headers=headers,
+                headers=_map_headers(headers),
                 timeout=timeout,
                 kwargs=kwargs,
             )
@@ -66,7 +67,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         params: dict[str, str] | None = None,
         json: Any = None,
         data: Any = None,
-        headers: CIMultiDict | None = None,
+        headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
         **kwargs,
     ) -> Response[T_co]:
@@ -77,7 +78,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 params=params,
                 json=json,
                 data=data,
-                headers=headers,
+                headers=_map_headers(headers),
                 timeout=timeout,
                 kwargs=kwargs,
             )
@@ -90,7 +91,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         params: dict[str, str] | None = None,
         json: Any = None,
         data: Any = None,
-        headers: CIMultiDict | None = None,
+        headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
         **kwargs,
     ) -> Response[T_co]:
@@ -101,7 +102,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 params=params,
                 json=json,
                 data=data,
-                headers=headers,
+                headers=_map_headers(headers),
                 timeout=timeout,
                 kwargs=kwargs,
             )
@@ -114,7 +115,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         params: dict[str, str] | None = None,
         json: Any = None,
         data: Any = None,
-        headers: CIMultiDict | None = None,
+        headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
         **kwargs,
     ) -> Response[T_co]:
@@ -125,7 +126,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 params=params,
                 json=json,
                 data=data,
-                headers=headers,
+                headers=_map_headers(headers),
                 timeout=timeout,
                 kwargs=kwargs,
             )
@@ -138,7 +139,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         params: dict[str, str] | None = None,
         json: Any = None,
         data: Any = None,
-        headers: CIMultiDict | None = None,
+        headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
         **kwargs,
     ) -> Response[T_co]:
@@ -149,11 +150,21 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 params=params,
                 json=json,
                 data=data,
-                headers=headers,
+                headers=_map_headers(headers),
                 timeout=timeout,
                 kwargs=kwargs,
             )
         )
+
+
+def _map_headers(headers: CIMultiDict | Mapping[str, Any] | None) -> CIMultiDict | None:
+    if headers is None:
+        return None
+
+    if isinstance(headers, CIMultiDict):
+        return headers
+
+    return CIMultiDict(headers)
 
 
 @runtime_checkable

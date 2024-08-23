@@ -105,6 +105,7 @@ class AiohttpExecutor(AbstractExecutor[aiohttp.ClientResponse]):
         )
 
         return Response[aiohttp.ClientResponse](
+            method=request.method,
             url=request.url,
             status=response.status,
             headers=response.headers.copy(),

@@ -46,7 +46,10 @@ class TestOpenTelemetryExecutor:
                 assert span.attributes.get(SpanAttributes.URL_PATH) == "/"
 
                 return Response(
-                    status=200, url=request.url, backend_response=DummyBackendResponse()
+                    status=200,
+                    url=request.url,
+                    method=request.method,
+                    backend_response=DummyBackendResponse(),
                 )
 
         base = _Catcher()
@@ -73,7 +76,10 @@ class TestOpenTelemetryExecutor:
                 assert request.headers.get("traceparent") is not None
 
                 return Response(
-                    status=200, url=request.url, backend_response=DummyBackendResponse()
+                    status=200,
+                    method=request.method,
+                    url=request.url,
+                    backend_response=DummyBackendResponse(),
                 )
 
         base = _Catcher()
@@ -99,7 +105,10 @@ class TestOpenTelemetryExecutor:
                 )
 
                 return Response(
-                    status=200, url=request.url, backend_response=DummyBackendResponse()
+                    status=200,
+                    method=request.method,
+                    url=request.url,
+                    backend_response=DummyBackendResponse(),
                 )
 
         base = _Catcher()

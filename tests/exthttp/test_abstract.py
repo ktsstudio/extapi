@@ -1,6 +1,7 @@
 from typing import Any, assert_type
 
 import pytest
+from multidict import CIMultiDict
 
 from extapi.http.abc import AbstractExecutor, Addon
 from extapi.http.types import RequestData, Response
@@ -30,6 +31,70 @@ class TestAbstractExecutor:
             request_filled.url,
             params=request_filled.params,
             headers=request_filled.headers,
+            timeout=request_filled.timeout,
+            json=request_filled.json,
+            data=request_filled.data,
+            **request_filled.kwargs,
+        )
+        assert executed is True
+
+    @pytest.mark.parametrize("method", ["get", "post", "put", "patch", "delete"])
+    async def test_methods_headers_dict(
+        self, request_filled: RequestData, response_simple: Response[Any], method: str
+    ):
+        executed = False
+
+        class _Executor(AbstractExecutor[Any]):
+            async def execute(self, request: RequestData) -> Response[Any]:
+                nonlocal executed
+                executed = True
+
+                request_filled.method = method.upper()
+                assert isinstance(request.headers, CIMultiDict)
+                assert request == request_filled
+
+                return response_simple
+
+        executor = _Executor()
+        executor_method = getattr(executor, method)
+
+        await executor_method(
+            request_filled.url,
+            params=request_filled.params,
+            headers=dict(request_filled.headers.items())
+            if request_filled.headers is not None
+            else None,
+            timeout=request_filled.timeout,
+            json=request_filled.json,
+            data=request_filled.data,
+            **request_filled.kwargs,
+        )
+        assert executed is True
+
+    @pytest.mark.parametrize("method", ["get", "post", "put", "patch", "delete"])
+    async def test_methods_headers_None(
+        self, request_filled: RequestData, response_simple: Response[Any], method: str
+    ):
+        request_filled.headers = None
+        executed = False
+
+        class _Executor(AbstractExecutor[Any]):
+            async def execute(self, request: RequestData) -> Response[Any]:
+                nonlocal executed
+                executed = True
+
+                request_filled.method = method.upper()
+                assert request == request_filled
+
+                return response_simple
+
+        executor = _Executor()
+        executor_method = getattr(executor, method)
+
+        await executor_method(
+            request_filled.url,
+            params=request_filled.params,
+            headers=None,
             timeout=request_filled.timeout,
             json=request_filled.json,
             data=request_filled.data,

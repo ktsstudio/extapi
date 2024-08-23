@@ -2,21 +2,20 @@ from aiohttp.test_utils import TestServer
 from multidict import CIMultiDict
 from yarl import URL
 
-from extapi.http.backends.aiohttp import AiohttpExecutor
+from extapi.http.backends.httpx import HttpxExecutor
 from extapi.http.types import RequestData
 
 
-class TestAiohttpBackend:
+class TestHttpxBackend:
     async def test_init(self):
-        async with AiohttpExecutor(
+        async with HttpxExecutor(
             ssl=True, default_timeout=1.0, trust_env=True
         ) as executor:
             assert executor._default_timeout == 1.0
-            assert executor._ssl is True
-            assert executor._session._trust_env is True
+            assert executor._client._trust_env is True
 
     async def test_execute(self, dummy_server: TestServer):
-        async with AiohttpExecutor() as executor:
+        async with HttpxExecutor() as executor:
             request = RequestData(
                 method="GET",
                 url=URL(f"http://localhost:{dummy_server.port}/get"),
@@ -25,10 +24,10 @@ class TestAiohttpBackend:
             response = await executor.execute(request)
             assert response.status == 200
             assert response.url == request.url
-            assert response.backend_response.original().status == 200
+            assert response.backend_response.original().status_code == 200
 
     async def test_execute_unknown(self, dummy_server: TestServer):
-        async with AiohttpExecutor() as executor:
+        async with HttpxExecutor() as executor:
             request = RequestData(
                 method="GET",
                 url=URL(f"http://localhost:{dummy_server.port}/unknown"),
@@ -37,10 +36,10 @@ class TestAiohttpBackend:
             response = await executor.execute(request)
             assert response.status == 404
             assert response.url == request.url
-            assert response.backend_response.original().status == 404
+            assert response.backend_response.original().status_code == 404
 
     async def test_read(self, dummy_server: TestServer):
-        async with AiohttpExecutor() as executor:
+        async with HttpxExecutor() as executor:
             request = RequestData(
                 method="GET",
                 url=URL(f"http://localhost:{dummy_server.port}/get"),
@@ -52,7 +51,7 @@ class TestAiohttpBackend:
                 assert res == b'{"status": "ok"}'
 
     async def test_json(self, dummy_server: TestServer):
-        async with AiohttpExecutor() as executor:
+        async with HttpxExecutor() as executor:
             request = RequestData(
                 method="GET",
                 url=URL(f"http://localhost:{dummy_server.port}/get"),
@@ -64,7 +63,7 @@ class TestAiohttpBackend:
                 assert res == {"status": "ok"}
 
     async def test_headers(self, dummy_server: TestServer):
-        async with AiohttpExecutor() as executor:
+        async with HttpxExecutor() as executor:
             request = RequestData(
                 method="GET",
                 url=URL(f"http://localhost:{dummy_server.port}/get"),

@@ -11,7 +11,8 @@ from tests.exthttp._helpers import DummyBackendResponse
 class TestStatusValidationAddon:
     @pytest.mark.parametrize("status", [200, 201])
     async def test_ok_status_default(self, request_simple: RequestData, status: int):
-        response = Response[Any](
+        response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=status,
             backend_response=DummyBackendResponse(),
@@ -22,7 +23,8 @@ class TestStatusValidationAddon:
 
     @pytest.mark.parametrize("status", [400, 403])
     async def test_ok_status_custom(self, request_simple: RequestData, status: int):
-        response = Response[Any](
+        response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=status,
             backend_response=DummyBackendResponse(),
@@ -33,7 +35,8 @@ class TestStatusValidationAddon:
 
     @pytest.mark.parametrize("status", [400, 500, 307, 201])
     async def test_error_status(self, request_simple: RequestData, status: int):
-        response = Response[Any](
+        response = Response(
+            method="GET",
             url=URL("http://example.com"),
             status=status,
             backend_response=DummyBackendResponse(),

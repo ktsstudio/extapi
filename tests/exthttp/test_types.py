@@ -10,6 +10,7 @@ from tests.exthttp._helpers import DummyBackendResponse
 class TestResponse:
     async def test_has_data(self):
         response = Response(
+            method="GET",
             url=URL("example.com"),
             status=200,
             backend_response=DummyBackendResponse(b"some-data"),
@@ -21,6 +22,7 @@ class TestResponse:
 
     async def test_json(self):
         response = Response(
+            method="GET",
             url=URL("example.com"),
             status=200,
             backend_response=DummyBackendResponse(b'{"a": 1, "b": [10, 20]}'),
@@ -40,6 +42,7 @@ class TestResponse:
 
     async def test_has_data_double(self):
         response = Response(
+            method="GET",
             url=URL("example.com"),
             status=200,
             backend_response=DummyBackendResponse(b"some-data"),
@@ -54,7 +57,10 @@ class TestResponse:
 
     async def test_ctx_mgr_not_closable(self):
         response = Response(
-            url=URL("example.com"), status=200, backend_response=DummyBackendResponse()
+            method="GET",
+            url=URL("example.com"),
+            status=200,
+            backend_response=DummyBackendResponse(),
         )
 
         async with response as resp:
@@ -75,7 +81,7 @@ class TestResponse:
                 return b""  # pragma: no cover
 
         response = Response(
-            url=URL("example.com"), status=200, backend_response=_Resp()
+            method="GET", url=URL("example.com"), status=200, backend_response=_Resp()
         )
 
         async with response as resp:
@@ -102,7 +108,7 @@ class TestResponse:
                 return None  # pragma: no cover
 
         response = Response(
-            url=URL("example.com"), status=200, backend_response=_Resp()
+            method="GET", url=URL("example.com"), status=200, backend_response=_Resp()
         )
 
         async with response as resp:

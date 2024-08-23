@@ -49,6 +49,7 @@ prometheus = [
 tests = [
     "pytest",
     "pytest-asyncio",
+    "pytest-aiohttp",
     "coverage",
 ]
 

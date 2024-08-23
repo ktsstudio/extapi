@@ -23,6 +23,7 @@ class DummyExecutor(AbstractExecutor[bytes]):
     async def execute(self, request: RequestData) -> Response[bytes]:
         return Response(
             status=self._status,
+            method=request.method,
             url=request.url,
             backend_response=DummyBackendResponse(),
         )

@@ -1,6 +1,9 @@
+from collections.abc import AsyncIterable
 from typing import Any
 
 import pytest
+from aiohttp import web
+from aiohttp.test_utils import TestServer
 from multidict import CIMultiDict
 from yarl import URL
 
@@ -32,8 +35,24 @@ def request_filled() -> RequestData:
 @pytest.fixture
 def response_simple(request_simple: RequestData) -> Response[Any]:
     return Response(
+        method=request_simple.method,
         url=request_simple.url,
         status=200,
         backend_response=DummyBackendResponse(),
         _data=b"",
     )
+
+
+@pytest.fixture
+async def dummy_server(
+    aiohttp_unused_port, aiohttp_server
+) -> AsyncIterable[TestServer]:
+    app = web.Application()
+
+    async def get(request):
+        return web.json_response({"status": "ok"}, headers=request.headers)
+
+    app.router.add_get("/get", get)
+
+    server = await aiohttp_server(app, port=aiohttp_unused_port())
+    yield server

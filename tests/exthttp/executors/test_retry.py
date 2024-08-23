@@ -34,6 +34,7 @@ class _DummyExecutor(AbstractExecutor[Any]):
 
         if isinstance(response, int):
             return Response(
+                method=request.method,
                 status=response,
                 backend_response=DummyBackendResponse(),
                 url=request.url,
@@ -213,7 +214,10 @@ class TestRetryExecutor:
 
     async def test_propagate_execute_error(self, request_simple: RequestData):
         resp = Response(
-            status=404, backend_response=DummyBackendResponse(), url=request_simple.url
+            status=404,
+            backend_response=DummyBackendResponse(),
+            url=request_simple.url,
+            method=request_simple.method,
         )
         base = _DummyExecutor(responses=[HttpExecuteError(resp), 200])
         executor = RetryableExecutor(

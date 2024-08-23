@@ -81,6 +81,7 @@ class TestBearerAuthAddon:
         addon = BearerAuthAddon[Any](getter)
         need_retry, timeout = await addon.need_retry(
             Response(
+                method=request_simple.method,
                 url=request_simple.url,
                 status=200,
                 backend_response=DummyBackendResponse(),
@@ -97,6 +98,7 @@ class TestBearerAuthAddon:
         addon = BearerAuthAddon[Any](getter)
         need_retry, timeout = await addon.need_retry(
             Response(
+                method=request_simple.method,
                 url=request_simple.url,
                 status=401,
                 backend_response=DummyBackendResponse(),
@@ -119,6 +121,7 @@ class TestStaticBearerAuthAddon:
         addon = StaticBearerAuthAddon[Any]("test-token")
         need_retry, timeout = await addon.need_retry(
             Response(
+                method=request_simple.method,
                 url=request_simple.url,
                 status=401,
                 backend_response=DummyBackendResponse(),
@@ -148,6 +151,7 @@ class TestStaticBasicAuthAddon:
         addon = StaticBasicAuthAddon[Any](login=login, password=password)
         need_retry, timeout = await addon.need_retry(
             Response(
+                method=request_simple.method,
                 url=request_simple.url,
                 status=401,
                 backend_response=DummyBackendResponse(),

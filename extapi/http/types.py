@@ -59,6 +59,7 @@ class BackendResponseProtocol(Protocol[T]):
 
 @dataclass(kw_only=True)
 class Response(Generic[T]):
+    method: str
     url: URL
     status: int
     headers: CIMultiDict = field(default_factory=lambda: CIMultiDict())

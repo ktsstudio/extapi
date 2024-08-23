@@ -46,7 +46,7 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
     def __init__(
         self,
         *,
-        check_ssl: bool = True,
+        ssl: bool = True,
         default_timeout: float = 10.0,
         follow_redirects: bool = True,
         **kwargs,
@@ -54,7 +54,7 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
         super().__init__()
         verify = kwargs.pop("verify", None)
         if verify is None:
-            verify = check_ssl
+            verify = ssl
         self._client = self._make_client(
             verify=verify, follow_redirects=follow_redirects, **kwargs
         )
@@ -96,6 +96,7 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
         ).__aenter__()
 
         return Response[httpx.Response](
+            method=request.method,
             url=request.url,
             status=response.status_code,
             headers=CIMultiDict(response.headers),
