@@ -3,17 +3,17 @@
 package?=extapi tests
 
 style:
-	python -m ruff format $(package)
-	python -m ruff check --select I --fix $(package)
+	ruff format $(package)
+	ruff check --select I --fix $(package)
 
 mypy:
-	python -m mypy --enable-error-code ignore-without-code $(package)
+	mypy --enable-error-code ignore-without-code $(package)
 
 ruff:
-	python -m ruff check $(package)
+	ruff check $(package)
 
 style-check:
-	python -m ruff format --check --diff $(package)
+	ruff format --check --diff $(package)
 
 deptry:
 	deptry . -e 'env|\.env|venv|\.venv|\..+'
@@ -21,6 +21,6 @@ deptry:
 lint: style-check ruff mypy deptry
 
 pytest:
-	python -m pytest .
+	pytest .
 
 test: lint pytest

@@ -51,6 +51,9 @@ tests = [
     "pytest-asyncio",
     "pytest-aiohttp",
     "coverage",
+    "mypy",
+    "ruff",
+    "deptry",
 ]
 
 [build-system]
@@ -72,7 +75,7 @@ check_untyped_defs = true
 asyncio_mode = "auto"
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["pytest-asyncio", "coverage"]
+DEP002 = ["pytest-asyncio", "coverage", "pytest-aiohttp", "mypy", "ruff", "deptry"]
 DEP004 = []
 
 
