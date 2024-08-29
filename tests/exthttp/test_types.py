@@ -71,7 +71,7 @@ class TestResponse:
 
         class _Resp(BackendResponseProtocol[bytes]):
             def original(self) -> bytes:
-                return b""
+                return b""  # pragma: no cover
 
             async def close(self) -> None:
                 nonlocal called
@@ -95,7 +95,7 @@ class TestResponse:
 
         class _Resp:
             def original(self) -> bytes:
-                return b""
+                return b""  # pragma: no cover
 
             async def close(self) -> None:
                 nonlocal called

@@ -21,14 +21,20 @@ T = TypeVar("T", covariant=True)
 
 class PrometheusMetricsExecutor(WrappedExecutor[T], Generic[T]):
     def __init__(
-        self, executor: AbstractExecutor[T], *, metrics_container: MetricsContainer
+        self,
+        executor: AbstractExecutor[T],
+        *,
+        metrics_container: MetricsContainer,
+        disable_warnings: bool = False,
     ):
         super().__init__(executor)
         self._metrics_container = metrics_container
+        self._disable_warnings = disable_warnings
 
     async def execute(self, request: RequestData) -> Response[T]:
         path_template = request.kwargs.pop("path_template", None)
-        if path_template is None:
+
+        if not self._disable_warnings and path_template is None:
             warnings.warn(
                 "It is highly recommended to pass `path_template` "
                 "argument to the executor in order to not explode the "

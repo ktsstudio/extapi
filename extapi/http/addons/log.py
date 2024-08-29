@@ -66,7 +66,7 @@ class LoggingAddon(Addon[T], Generic[T]):
             )
 
 
-class VerboseLoggingExecutor(LoggingAddon[T], Generic[T]):
+class VerboseLoggingAddon(LoggingAddon[T], Generic[T]):
     def __init__(
         self,
         *,

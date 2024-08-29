@@ -1,3 +1,5 @@
+# pragma: no cover
+
 import asyncio
 import logging
 from typing import TypeVar
