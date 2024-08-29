@@ -125,3 +125,4 @@ dmypy.json
 /venv*
 pip-wheel-metadata
 local
+uv.lock

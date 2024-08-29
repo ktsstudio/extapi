@@ -1,3 +1,6 @@
 include:
   project: mnt/ci
   file: modules/python.yaml
+  inputs:
+    python-version: 3.12-slim
+    package-manager: uv
