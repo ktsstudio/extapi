@@ -45,7 +45,7 @@ def response_simple(request_simple: RequestData) -> Response[Any]:
 
 @pytest.fixture
 async def dummy_server(
-    aiohttp_unused_port, aiohttp_server
+    unused_tcp_port_factory, aiohttp_server
 ) -> AsyncIterable[TestServer]:
     app = web.Application()
 
@@ -54,5 +54,5 @@ async def dummy_server(
 
     app.router.add_get("/get", get)
 
-    server = await aiohttp_server(app, port=aiohttp_unused_port())
+    server = await aiohttp_server(app, port=unused_tcp_port_factory())
     yield server
