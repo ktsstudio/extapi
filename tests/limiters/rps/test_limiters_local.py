@@ -4,7 +4,7 @@ from extapi.limiters.rps.local import LocalRateLimiter
 
 
 class TestLocalLimiter:
-    async def test_no_limit(self, rate_limit: int):
+    async def test_no_limit(self):
         started_at = time.monotonic()
         limiter = LocalRateLimiter(rate_limit=0)
         await limiter.rate_limit()
