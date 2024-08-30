@@ -87,6 +87,7 @@ class TestResponse:
         async with response as resp:
             assert resp is response
             assert isinstance(resp.backend_response, _Resp)
+            assert resp.original == b""
 
         assert called is True
 
@@ -114,5 +115,6 @@ class TestResponse:
         async with response as resp:
             assert resp is response
             assert isinstance(resp.backend_response, _Resp)
+            assert resp.original == b""
 
         assert called is True

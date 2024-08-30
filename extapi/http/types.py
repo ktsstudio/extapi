@@ -67,6 +67,10 @@ class Response(Generic[T]):
 
     _data: bytes | None = None
 
+    @property
+    def original(self) -> T:
+        return self.backend_response.original()
+
     async def read(self) -> bytes:
         if self._data is not None:
             return self._data

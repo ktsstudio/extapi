@@ -24,7 +24,7 @@ class TestHttpxBackend:
             response = await executor.execute(request)
             assert response.status == 200
             assert response.url == request.url
-            assert response.backend_response.original().status_code == 200
+            assert response.original.status_code == 200
 
     async def test_execute_unknown(self, dummy_server: TestServer):
         async with HttpxExecutor() as executor:
@@ -36,7 +36,7 @@ class TestHttpxBackend:
             response = await executor.execute(request)
             assert response.status == 404
             assert response.url == request.url
-            assert response.backend_response.original().status_code == 404
+            assert response.original.status_code == 404
 
     async def test_read(self, dummy_server: TestServer):
         async with HttpxExecutor() as executor:

@@ -66,8 +66,8 @@ async def demo2():
             "https://ifconfig.co/json"  # , path_template="/json"
         ) as response:
             print(await response.read())
-            print(response.backend_response.original().headers)
-            # assert response.backend_response.original().http_version == "HTTP/2"
+            print(response.original.headers)
+            # assert response.original.http_version == "HTTP/2"
 
 
 asyncio.run(demo2())

@@ -1,6 +1,6 @@
 [project]
 name = "extapi"
-version = "0.1.0"
+version = "0.1.1"
 description = "External API library"
 authors = [
     { name = "KTS", email = "hello@kts.tech" }
