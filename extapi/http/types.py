@@ -29,6 +29,7 @@ class RequestData:
     data: Any = None
     headers: CIMultiDict | None = None
     timeout: Any | float | None = None
+    auto_read_body: bool | None = None
     kwargs: dict[str, Any] = field(default_factory=dict)
 
 

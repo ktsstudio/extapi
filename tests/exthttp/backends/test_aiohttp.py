@@ -44,6 +44,7 @@ class TestAiohttpBackend:
             request = RequestData(
                 method="GET",
                 url=URL(f"http://localhost:{dummy_server.port}/get"),
+                auto_read_body=False,
             )
 
             response = await executor.execute(request)
@@ -51,11 +52,38 @@ class TestAiohttpBackend:
                 res = await response.read()
                 assert res == b'{"status": "ok"}'
 
+    async def test_read_supplied(self, dummy_server: TestServer):
+        async with AiohttpExecutor() as executor:
+            request = RequestData(
+                method="GET",
+                url=URL(f"http://localhost:{dummy_server.port}/get"),
+                auto_read_body=True,
+            )
+
+            response = await executor.execute(request)
+            async with response:
+                res = await response.read()
+                assert res == b'{"status": "ok"}'
+
+    async def test_json_supplied(self, dummy_server: TestServer):
+        async with AiohttpExecutor() as executor:
+            request = RequestData(
+                method="GET",
+                url=URL(f"http://localhost:{dummy_server.port}/get"),
+                auto_read_body=True,
+            )
+
+            response = await executor.execute(request)
+            async with response:
+                res = await response.json()
+                assert res == {"status": "ok"}
+
     async def test_json(self, dummy_server: TestServer):
         async with AiohttpExecutor() as executor:
             request = RequestData(
                 method="GET",
                 url=URL(f"http://localhost:{dummy_server.port}/get"),
+                auto_read_body=False,
             )
 
             response = await executor.execute(request)

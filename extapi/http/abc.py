@@ -45,6 +45,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         data: Any = None,
         headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
+        auto_read_body: bool | None = None,
         **kwargs,
     ) -> Response[T_co]:
         return await self.execute(
@@ -56,6 +57,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 data=data,
                 headers=_map_headers(headers),
                 timeout=timeout,
+                auto_read_body=auto_read_body,
                 kwargs=kwargs,
             )
         )
@@ -69,6 +71,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         data: Any = None,
         headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
+        auto_read_body: bool | None = None,
         **kwargs,
     ) -> Response[T_co]:
         return await self.execute(
@@ -80,6 +83,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 data=data,
                 headers=_map_headers(headers),
                 timeout=timeout,
+                auto_read_body=auto_read_body,
                 kwargs=kwargs,
             )
         )
@@ -93,6 +97,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         data: Any = None,
         headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
+        auto_read_body: bool | None = None,
         **kwargs,
     ) -> Response[T_co]:
         return await self.execute(
@@ -104,6 +109,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 data=data,
                 headers=_map_headers(headers),
                 timeout=timeout,
+                auto_read_body=auto_read_body,
                 kwargs=kwargs,
             )
         )
@@ -117,6 +123,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         data: Any = None,
         headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
+        auto_read_body: bool | None = None,
         **kwargs,
     ) -> Response[T_co]:
         return await self.execute(
@@ -128,6 +135,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 data=data,
                 headers=_map_headers(headers),
                 timeout=timeout,
+                auto_read_body=auto_read_body,
                 kwargs=kwargs,
             )
         )
@@ -141,6 +149,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
         data: Any = None,
         headers: CIMultiDict | Mapping[str, Any] | None = None,
         timeout: Any | float | None = None,
+        auto_read_body: bool | None = None,
         **kwargs,
     ) -> Response[T_co]:
         return await self.execute(
@@ -152,6 +161,7 @@ class AbstractExecutor(Generic[T_co], metaclass=abc.ABCMeta):
                 data=data,
                 headers=_map_headers(headers),
                 timeout=timeout,
+                auto_read_body=auto_read_body,
                 kwargs=kwargs,
             )
         )

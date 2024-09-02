@@ -15,8 +15,9 @@ from extapi.http.types import (
 class AiohttpResponseWrap(BackendResponseProtocol[aiohttp.ClientResponse]):
     __slots__ = ("_original",)
 
-    def __init__(self, response: aiohttp.ClientResponse):
+    def __init__(self, response: aiohttp.ClientResponse, *, body: bytes | None = None):
         self._original = response
+        self._body = body
 
     def original(self) -> aiohttp.ClientResponse:
         return self._original
@@ -26,6 +27,10 @@ class AiohttpResponseWrap(BackendResponseProtocol[aiohttp.ClientResponse]):
         await self._original.wait_for_close()
 
     async def read(self) -> bytes:
+        if self._body is not None:
+            return self._body
+
+        # if body is not supplied - delegate to original
         return await self._original.read()
 
     async def json(
@@ -34,6 +39,14 @@ class AiohttpResponseWrap(BackendResponseProtocol[aiohttp.ClientResponse]):
         encoding: str | None,
         loads: Callable[[str], Any] = DEFAULT_JSON_DECODER,
     ) -> Any:
+        if self._body is not None:
+            if encoding is None:
+                s = self._body.decode()
+            else:
+                s = self._body.decode(encoding=encoding)
+            return loads(s)
+
+        # if body is not supplied - delegate to original
         return await self._original.json(encoding=encoding, loads=loads)
 
 
@@ -67,12 +80,18 @@ class AiohttpExecutor(AbstractExecutor[aiohttp.ClientResponse]):
     )
 
     def __init__(
-        self, *args, ssl: bool | Any = True, default_timeout: float = 10.0, **kwargs
+        self,
+        *args,
+        ssl: bool | Any = True,
+        default_timeout: float = 10.0,
+        auto_read_body: bool = True,
+        **kwargs,
     ):
         super().__init__()
         self._ssl = ssl
         self._session = self._make_session(*args, **kwargs)
         self._default_timeout = default_timeout
+        self._auto_read_body = auto_read_body
 
     def _make_session(self, *args, **kwargs) -> aiohttp.ClientSession:
         return aiohttp.ClientSession(*args, **kwargs)
@@ -82,6 +101,11 @@ class AiohttpExecutor(AbstractExecutor[aiohttp.ClientResponse]):
 
     async def execute(self, request: RequestData) -> Response[aiohttp.ClientResponse]:
         timeout = request.timeout or self._default_timeout
+        auto_read_body = (
+            request.auto_read_body
+            if request.auto_read_body is not None
+            else self._auto_read_body
+        )
 
         # aiohttp-specific kwargs
         # we need to pull them individually because
@@ -104,10 +128,14 @@ class AiohttpExecutor(AbstractExecutor[aiohttp.ClientResponse]):
             **aiohttp_kwargs,
         )
 
+        body: bytes | None = None
+        if auto_read_body:
+            body = await response.read()
+
         return Response[aiohttp.ClientResponse](
             method=request.method,
             url=request.url,
             status=response.status,
             headers=response.headers.copy(),
-            backend_response=AiohttpResponseWrap(response),
+            backend_response=AiohttpResponseWrap(response, body=body),
         )

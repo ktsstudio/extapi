@@ -14,8 +14,9 @@ from extapi.http.types import (
 class HttpxResponseWrap(BackendResponseProtocol[httpx.Response]):
     __slots__ = ("_original",)
 
-    def __init__(self, response: httpx.Response):
+    def __init__(self, response: httpx.Response, *, body: bytes | None = None):
         self._original = response
+        self._body = body
 
     def original(self) -> httpx.Response:
         return self._original
@@ -24,6 +25,10 @@ class HttpxResponseWrap(BackendResponseProtocol[httpx.Response]):
         return await self._original.aclose()
 
     async def read(self) -> bytes:
+        if self._body is not None:
+            return self._body
+
+        # if body is not supplied - delegate to original
         return await self._original.aread()
 
 
@@ -49,6 +54,7 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
         ssl: bool = True,
         default_timeout: float = 10.0,
         follow_redirects: bool = True,
+        auto_read_body: bool = True,
         **kwargs,
     ):
         super().__init__()
@@ -59,6 +65,7 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
             verify=verify, follow_redirects=follow_redirects, **kwargs
         )
         self._default_timeout = default_timeout
+        self._auto_read_body = auto_read_body
 
     def _make_client(self, *args, **kwargs) -> httpx.AsyncClient:
         return httpx.AsyncClient(*args, **kwargs)
@@ -68,6 +75,12 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
 
     async def execute(self, request: RequestData) -> Response[httpx.Response]:
         timeout = request.timeout or self._default_timeout
+        auto_read_body = (
+            request.auto_read_body
+            if request.auto_read_body is not None
+            else self._auto_read_body
+        )
+
         url = str(request.url)
 
         if request.headers is None:
@@ -95,10 +108,14 @@ class HttpxExecutor(AbstractExecutor[httpx.Response], metaclass=abc.ABCMeta):
             **httpx_kwargs,
         ).__aenter__()
 
+        body: bytes | None = None
+        if auto_read_body:
+            body = await response.aread()
+
         return Response[httpx.Response](
             method=request.method,
             url=request.url,
             status=response.status_code,
             headers=CIMultiDict(response.headers),
-            backend_response=HttpxResponseWrap(response),
+            backend_response=HttpxResponseWrap(response, body=body),
         )
