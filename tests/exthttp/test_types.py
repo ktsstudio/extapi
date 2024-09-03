@@ -50,9 +50,7 @@ class TestResponse:
 
         assert response.status == 200
         assert response.headers == CIMultiDict()
-        assert response._data is None
         assert await response.read() == b"some-data"
-        assert response._data is not None
         assert await response.read() == b"some-data"
 
     async def test_ctx_mgr_not_closable(self):

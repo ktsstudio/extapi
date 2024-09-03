@@ -12,7 +12,7 @@ from extapi.http.types import (
 
 
 class HttpxResponseWrap(BackendResponseProtocol[httpx.Response]):
-    __slots__ = ("_original",)
+    __slots__ = ("_original", "_body")
 
     def __init__(self, response: httpx.Response, *, body: bytes | None = None):
         self._original = response

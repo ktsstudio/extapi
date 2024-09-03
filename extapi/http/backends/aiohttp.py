@@ -13,7 +13,7 @@ from extapi.http.types import (
 
 
 class AiohttpResponseWrap(BackendResponseProtocol[aiohttp.ClientResponse]):
-    __slots__ = ("_original",)
+    __slots__ = ("_original", "_body")
 
     def __init__(self, response: aiohttp.ClientResponse, *, body: bytes | None = None):
         self._original = response
@@ -39,14 +39,8 @@ class AiohttpResponseWrap(BackendResponseProtocol[aiohttp.ClientResponse]):
         encoding: str | None,
         loads: Callable[[str], Any] = DEFAULT_JSON_DECODER,
     ) -> Any:
-        if self._body is not None:
-            if encoding is None:
-                s = self._body.decode()
-            else:
-                s = self._body.decode(encoding=encoding)
-            return loads(s)
-
-        # if body is not supplied - delegate to original
+        # always delegate to original aiohttp.ClientResponse
+        # because the data has already been read
         return await self._original.json(encoding=encoding, loads=loads)
 
 

@@ -39,7 +39,6 @@ def response_simple(request_simple: RequestData) -> Response[Any]:
         url=request_simple.url,
         status=200,
         backend_response=DummyBackendResponse(),
-        _data=b"",
     )
 
 

@@ -66,18 +66,12 @@ class Response(Generic[T]):
     headers: CIMultiDict = field(default_factory=lambda: CIMultiDict())
     backend_response: BackendResponseProtocol[T]
 
-    _data: bytes | None = None
-
     @property
     def original(self) -> T:
         return self.backend_response.original()
 
     async def read(self) -> bytes:
-        if self._data is not None:
-            return self._data
-
-        self._data = await self.backend_response.read()
-        return self._data
+        return await self.backend_response.read()
 
     async def json(
         self,
