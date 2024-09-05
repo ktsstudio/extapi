@@ -1,3 +1,6 @@
+# 0.1.4
+* removed opentelemetry-sdk from dependencies
+
 # 0.1.3
 * simplify storing cached Response data
 
