@@ -1,6 +1,6 @@
 [project]
 name = "extapi"
-version = "0.1.4"
+version = "0.1.5"
 description = "External API library"
 authors = [
     { name = "KTS", email = "hello@kts.tech" }
@@ -49,6 +49,7 @@ tests = [
     "pytest",
     "pytest-asyncio",
     "pytest-aiohttp",
+    "pytest-mock",
     "coverage",
     "mypy",
     "ruff",

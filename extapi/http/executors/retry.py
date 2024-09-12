@@ -150,6 +150,9 @@ class RetryableExecutor(WrappedExecutor[T], Generic[T]):
                         e,
                     )
 
+            if retry >= self._max_retries - 1:
+                break
+
             if retry_sleep_timeout > 0:
                 await asyncio.sleep(retry_sleep_timeout)
 

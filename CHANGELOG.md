@@ -1,3 +1,6 @@
+# 0.1.5
+* removed unnecessary `asyncio.sleep` after the last retry in `RetryableExecutor.execute`
+
 # 0.1.4
 * removed opentelemetry-sdk from dependencies
 
