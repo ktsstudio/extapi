@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from typing import Any
 
 import pytest
+from pytest_mock.plugin import MockerFixture
 
 from extapi.http.abc import AbstractExecutor, Addon
 from extapi.http.addons.auth import BearerAuthAddon
@@ -283,3 +284,20 @@ class TestRetryExecutor:
 
         assert response.status == 200
         assert base.call_count == 3
+
+    async def test_correct_sleep_count(
+        self, request_simple: RequestData, mocker: MockerFixture
+    ):
+        mock_sleep = mocker.patch("asyncio.sleep")
+        base = _DummyExecutor(responses=[500, 500])
+        executor = RetryableExecutor(
+            base,
+            max_retries=2,
+            retry_sleep_timeout=0.1,
+        )
+
+        response = await executor.execute(request_simple)
+
+        assert response.status == 500
+        assert base.call_count == 2
+        assert mock_sleep.await_count == 1
