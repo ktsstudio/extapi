@@ -5,7 +5,7 @@ description = "External API library"
 authors = [
     { name = "KTS", email = "hello@kts.tech" }
 ]
-license = "Apache-2.0"
+license = {file = "LICENSE"}
 
 # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = [
