@@ -1,11 +1,11 @@
 [project]
 name = "extapi"
-version = "0.1.6"
+version = "0.1.7"
 description = "External API library"
 authors = [
     { name = "KTS", email = "hello@kts.tech" }
 ]
-license = { text = "Proprietary" }
+license = "Apache-2.0"
 
 # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
 classifiers = [

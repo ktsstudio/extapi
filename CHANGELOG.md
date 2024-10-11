@@ -1,3 +1,6 @@
+# 0.1.7
+* change licenses to Apache 2.0
+
 # 0.1.6
 * moved to github
 
