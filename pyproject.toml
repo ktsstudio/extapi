@@ -1,6 +1,6 @@
 [project]
 name = "extapi"
-version = "0.1.5"
+version = "0.1.6b1"
 description = "External API library"
 authors = [
     { name = "KTS", email = "hello@kts.tech" }
@@ -25,6 +25,7 @@ readme = "README.md"
 dependencies = [
     "multidict",
     "yarl",
+    "typing-extensions; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]

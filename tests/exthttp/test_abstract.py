@@ -1,10 +1,16 @@
-from typing import Any, assert_type
+from typing import Any
 
 import pytest
 from multidict import CIMultiDict
 
+from extapi._meta import PY311
 from extapi.http.abc import AbstractExecutor, Addon
 from extapi.http.types import RequestData, Response
+
+if PY311:
+    from typing import assert_type  # type: ignore[attr-defined]
+else:
+    from typing_extensions import assert_type
 
 
 class TestAbstractExecutor:

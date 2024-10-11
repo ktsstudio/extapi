@@ -1,5 +1,8 @@
 # extapi
 
+[![Build](https://github.com/ktsstudio/extapi/actions/workflows/actions.yaml/badge.svg?branch=main)](https://github.com/ktsstudio/extapi/actions)
+[![PyPI](https://img.shields.io/pypi/v/extapi.svg)](https://pypi.python.org/pypi/extapi)
+
 Library for performing HTTP calls to external systems. Made to be modular, extensible and easy to use.
 
 ## Installation

@@ -6,13 +6,19 @@ from typing import (
     Generic,
     Literal,
     Protocol,
-    Self,
     TypeVar,
     runtime_checkable,
 )
 
 from multidict import CIMultiDict
 from yarl import URL
+
+from extapi._meta import PY311
+
+if PY311:
+    from typing import Self  # type: ignore[attr-defined]
+else:
+    from typing_extensions import Self
 
 HttpMethod = Literal["GET", "POST", "PUT", "PATCH", "DELETE"] | str
 StrOrURL = str | URL

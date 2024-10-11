@@ -1,5 +1,12 @@
 import abc
-from typing import Protocol, Self
+from typing import Protocol
+
+from extapi._meta import PY311
+
+if PY311:
+    from typing import Self  # type: ignore[attr-defined]
+else:
+    from typing_extensions import Self
 
 
 class AbstractSemaphore(metaclass=abc.ABCMeta):

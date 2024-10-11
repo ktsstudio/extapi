@@ -1,11 +1,18 @@
 import abc
 from collections.abc import Mapping
-from typing import Any, Generic, Protocol, Self, TypeVar, runtime_checkable
+from typing import Any, Generic, Protocol, TypeVar, runtime_checkable
 
 from multidict import CIMultiDict
 from yarl import URL
 
+from extapi._meta import PY311
+
 from .types import RequestData, Response, StrOrURL
+
+if PY311:
+    from typing import Self  # type: ignore[attr-defined]
+else:
+    from typing_extensions import Self
 
 T_co = TypeVar("T_co", covariant=True)
 T_contr = TypeVar("T_contr", contravariant=True)

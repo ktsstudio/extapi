@@ -6,7 +6,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         python-version: ['3.10', '3.11', '3.12']
 
     runs-on: ${{ matrix.os }}
@@ -28,13 +28,13 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Run style check
-        run: uv run ruff format --check --diff $(package)
+        run: uv run ruff format --check --diff extapi tests
 
       - name: Run ruff
-        run: uv run ruff check $(package)
+        run: uv run ruff check extapi tests
 
       - name: Run mypy
-        run: uv run mypy --enable-error-code ignore-without-code $(package)
+        run: uv run mypy --enable-error-code ignore-without-code extapi tests
 
       - name: Run deptry
         run: uv run deptry . -e 'env|\.env|venv|\.venv|\..+'
@@ -42,49 +42,11 @@ jobs:
       - name: Run tests
         run: uv run pytest .
 
-  build-wheels:
-    name: Build wheels on ${{ matrix.os }}
+  publish:
+    name: Publish to PyPI
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
     needs:
       - test
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-
-      - uses: actions/setup-python@v5
-
-      - name: Install the project
-        run: uv sync --all-extras --dev
-        env:
-          UV_SYSTEM_PYTHON: 1
-
-      - name: Install cibuildwheel
-        run: pip install --upgrade cibuildwheel
-
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-*"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheels-${{ matrix.os }}
-          path: ./wheelhouse/*.whl
-
-  publish:
-    name: Publish wheels
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    needs:
-      - build-wheels
     runs-on: ubuntu-latest
     steps:
       - name: Get tag
@@ -106,26 +68,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel twine build
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: wheels-ubuntu-latest
-          path: wheels-ubuntu
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: wheels-macos-latest
-          path: wheels-macos
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: wheels-windows-latest
-          path: wheels-windows
-
       - name: Publish dist
         run: |
           python -m build . -s
-          tree dist wheels-ubuntu wheels-macos wheels-windows
-          twine upload dist/* wheels-ubuntu/*.whl wheels-macos/*.whl wheels-windows/*.whl
+          tree dist
+          twine upload dist/*
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
@@ -136,7 +83,4 @@ jobs:
           prerelease: false
           title: ${{ steps.get_tag.outputs.TAG }}
           files: |
-            wheels-ubuntu/*.whl
-            wheels-macos/*.whl
-            wheels-windows/*.whl
             dist/*
